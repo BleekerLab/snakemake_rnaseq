@@ -8,14 +8,13 @@ A snakemake pipeline for the analysis of RNA-seq data with the use of hisat2 and
 Map, count, normalize and get differential expressions of paired-end Illumina RNA-seq data.
 
 # Description
-Different branches are available with some different stratagies.
-The master contains a pipe line that solely makes use of an existing transcriptome that can be specified in the config file.
+Pipeline that analyses raw RNA-seq data to a file containing normalized counts, differential expression and functions of transcripts. The raw fastq files will be trimmed for adaptors and quality with trimmomatic. next, necessery genome and transcriptome will be downloaded and the trimmed reads will be mapped using hisat2. with stringtie and a refference annotation a new annotation will be created. This new annotation will be used to obtain the raw counts and do a local blast to a transcriptome fasta containing predicted functions. The counts are normalized and differential expressions are calculated using DESeq2. This data is combined with the predicted functions to get the final results table.
 
 
 # Content
 - Snakefile containing the targeted output and the rules to generate them from the input files.
 - config/ , folder containing the configuration files making the Snakefile adaptable to any input files, genome and parameter for the rules.
-- data/, folder containing samples.txt (sample descriptions) and subsetted paired-end fastq files used to test locally the pipeline. Generated using [Seqtk](https://github.com/lh3/seqtk): 
+- data/, folder containing samples.txt (sample descriptions) and subsetted paired-end fastq files used to test locally the pipeline. Generated using [Seqtk](https://github.com/lh3/seqtk):
 `seqtk sample -s100 {inputfile(can be gzipped)} 250000 > {output(always gunzipped)}`
 - envs/, folder containing the environments needed for the Snakefile to run. Need to make one specifically for MACS2 as MACS2 uses python 2.7 following the information found [here](https://groups.google.com/forum/#!searchin/snakemake/macs%7Csort:relevance/snakemake/60txGSq81zE/NzCUTdJ_AQAJ).
 
