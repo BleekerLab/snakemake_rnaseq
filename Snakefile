@@ -8,6 +8,8 @@ transcriptome_gtf_URL = config["refs"]["transcriptomeGtf"]
 import pandas as pd
 SAMPLES = list(pd.read_table(config["units"])["sample"])
 conditions = list(pd.read_table("data/samples.txt")["condition"])
+fwd        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.read_table(config["units"])["fq1"])))
+rev        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.read_table(config["units"])["fq2"])))
 
 rule all:
     input:
@@ -55,8 +57,8 @@ rule get_ref_transcriptome_index:
 # trim and quality filter of the reads
 rule trimmomatic:
     input:
-        fq1 = "data/{SAMPLES}_R1.sub.fq",
-        fq2 = "data/{SAMPLES}_R2.sub.fq",
+        fq1             = lambda wildcards: fwd[wildcards.samples],
+        fq2             = lambda wildcards: rev[wildcards.samples],
         adapters = config["adapters"]
     output:
         fw_reads = "trimmed/{SAMPLES}_fw.fq",
