@@ -1,0 +1,14 @@
+channels:
+  - conda-forge
+  - bioconda
+  - r
+  - defaults
+dependencies:
+  - python=3.5.1
+  - samtools=1.9
+  - snakemake=5.2.0
+  - fastqc=0.11.5
+  - trimmomatic=0.38
+  - parallel-fastq-dump=0.6.3
+  - bowtie2=2.3.4
+  - wget=1.19.5
