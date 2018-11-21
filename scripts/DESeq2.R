@@ -96,4 +96,4 @@ for(i in levels(condition)){
         ## Order by adjusted p-value and mrge to normalized counts
         #res <- res[order(res$padj), ]
 # write the data to a file.
-write.csv(resdata, file=args[3])
+write.csv(resdata, file=opt$outdir)
