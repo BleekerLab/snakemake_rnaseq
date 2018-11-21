@@ -221,18 +221,18 @@ rule create_counts_table:
 
 rule DESeq2_analysis:
     input:
-        counts = "results/counts.txt",
-        #functions = "results/stringtie_transcriptome_blast.txt"
+        counts      = "results/counts.txt",
+        samplefile  = config["samplefile"]
     output:
         "results/result.csv"
     message:
         "normalizing read counts en creating differential expression table"
     params:
-        con = expand("{cons}", cons=conditions)
+        maxfraction = float(config["DESeq2"]["maxfraction"])
     conda:
         "envs/deseq.yaml"
     shell:
-        "Rscript scripts/DESeq2.R {input.counts} {params.con}"
+        "Rscript scripts/DESeq2.R -c {input.counts} -s {input.samplefile} -o {output} -m {params.maxfraction}"
 
 rule results_function:
     input:
