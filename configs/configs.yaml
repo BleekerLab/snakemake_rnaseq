@@ -1,5 +1,5 @@
 
-samplefile: data/samples.txt        # Complete the tab sep value file with the path to the files and their conditions
+units: data/samples.txt        # Complete the tab sep value file with the path to the files and their conditions
 
 ### Definition of the path Snakemake has to create
 working_dir: "temp/"
