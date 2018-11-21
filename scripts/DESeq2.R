@@ -44,9 +44,6 @@ if (length(conditions) == 1){
   print("too many conditions to compare, skipping")
 }
 
-#(condition <- factor(args[2:length(args)]))
-#(condition <- factor(c(rep("ctl", 3), rep("exp", 3))))
-
 # Analysis with DESeq2 ----------------------------------------------------
 # Create a coldata frame and instantiate the DESeqDataSet. See ?DESeqDataSetFromMatrix
 (coldata <- data.frame(row.names=colnames(countdata), condition))
@@ -57,8 +54,6 @@ dds <- DESeq(dds)
 
 # create dataframe containing normalized counts, to wich the differential expression values will be added
 resdata <- as.data.frame(counts(dds, normalized=TRUE))
-head(resdata)
-nrow(resdata)
 
 # iterate through the list of conditions to create differential expression (DE) values for all possible pairs
 x <- 1
@@ -83,11 +78,5 @@ for(i in levels(condition)){
   }
 }
 
-
-        # Regularized log transformation for clustering/heatmaps, etc
-        #rld <- rlogTransformation(dds)
-        #res <- results(dds)
-        ## Order by adjusted p-value and mrge to normalized counts
-        #res <- res[order(res$padj), ]
 # write the data to a file.
 write.csv(resdata, file=opt$outdir)
