@@ -7,7 +7,7 @@ transcriptome_gtf_URL = config["refs"]["transcriptomeGtf"]
 # create lists containing samplenames and conditions from the file: data/sampls.txt
 import pandas as pd
 SAMPLES = list(pd.read_table(config["units"])["sample"])
-conditions = list(pd.read_table("data/samples.txt")["condition"])
+conditions = list(pd.read_table(config["units"])["condition"])
 fwd        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.read_table(config["units"])["fq1"])))
 rev        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.read_table(config["units"])["fq2"])))
 
@@ -59,24 +59,24 @@ rule trimmomatic:
     input:
         fq1             = lambda wildcards: fwd[wildcards.samples],
         fq2             = lambda wildcards: rev[wildcards.samples],
-        adapters = config["adapters"]
+        adapters        = config["adapters"]
     output:
-        fw_reads = "trimmed/{SAMPLES}_fw.fq",
-        rev_reads = "trimmed/{SAMPLES}_rev.fq",
+        fw_reads        = "trimmed/{SAMPLES}_fw.fq",
+        rev_reads       = "trimmed/{SAMPLES}_rev.fq",
         forwardUnpaired = "trimmed/{SAMPLES}_forward_unpaired.fastq",
         reverseUnpaired = "trimmed/{SAMPLES}_reverse_unpaired.fastq"
 #    message: "trimming reads"
 #        "logs/trimmomatic/{SAMPLES}.log"
     params:
-        seedMisMatches =            str(config['trimmomatic']['seedMisMatches']),
-        palindromeClipTreshold =    str(config['trimmomatic']['palindromeClipTreshold']),
-        simpleClipThreshhold =      str(config['trimmomatic']['simpleClipThreshold']),
-        LeadMinTrimQual =           str(config['trimmomatic']['LeadMinTrimQual']),
-        TrailMinTrimQual =          str(config['trimmomatic']['TrailMinTrimQual']),
-        windowSize =                str(config['trimmomatic']['windowSize']),
-        avgMinQual =                str(config['trimmomatic']['avgMinQual']),
-        minReadLen =                str(config['trimmomatic']['minReadLength']),
-        phred = 		            str(config["trimmomatic"]["phred"])
+        seedMisMatches         =  str(config['trimmomatic']['seedMisMatches']),
+        palindromeClipTreshold =  str(config['trimmomatic']['palindromeClipTreshold']),
+        simpleClipThreshhold   =  str(config['trimmomatic']['simpleClipThreshold']),
+        LeadMinTrimQual        =  str(config['trimmomatic']['LeadMinTrimQual']),
+        TrailMinTrimQual       =  str(config['trimmomatic']['TrailMinTrimQual']),
+        windowSize             =  str(config['trimmomatic']['windowSize']),
+        avgMinQual             =  str(config['trimmomatic']['avgMinQual']),
+        minReadLen             =  str(config['trimmomatic']['minReadLength']),
+        phred                  =  str(config["trimmomatic"]["phred"])
     threads: 1
     shell:
         "trimmomatic PE {params.phred} -threads {threads} "
@@ -98,8 +98,8 @@ rule fastqc:
         fwd = "trimmed/{SAMPLES}_fw.fq",
         rev = "trimmed/{SAMPLES}_rev.fq",
     output:
-        fwd="results/fastqc/{SAMPLES}_fw_fastqc.zip",
-        rev="results/fastqc/{SAMPLES}_rev_fastqc.zip"
+        fwd = "results/fastqc/{SAMPLES}_fw_fastqc.zip",
+        rev = "results/fastqc/{SAMPLES}_rev_fastqc.zip"
     log:
         "results/logs/fastqc/{SAMPLES}.fastqc.log"
     params:
@@ -222,7 +222,7 @@ rule create_counts_table:
 rule DESeq2_analysis:
     input:
         counts      = "results/counts.txt",
-        samplefile  = config["samplefile"]
+        samplefile  = config["units"]
     output:
         "results/result.csv"
     message:
