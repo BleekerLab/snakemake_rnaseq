@@ -1,5 +1,5 @@
 ### Sample information
-units: data/samples.txt     
+units: samples.tsv     
 
 ### Definition of the path Snakemake has to create
 working_dir: "temp/"
@@ -9,9 +9,9 @@ result_dir: "results/"
 refs:
     genome:
         ftp://ftp.solgenomics.net/genomes/Petunia_axillaris/assembly/Petunia_axillaris_v1.6.2_genome.fasta
-    transcriptomeFas:
+    transcriptome_fasta:
         "ftp://ftp.solgenomics.net/genomes/Petunia_axillaris/annotation/Petunia_axillaris_v1.6.2_proteins.fasta"
-    transcriptomeGtf:
+    transcriptome_gtf:
         "ftp://ftp.solgenomics.net/genomes/Petunia_axillaris/annotation/Petunia_axillaris_v1.6.2_CDS.gtf"
 
 ### Software parameters

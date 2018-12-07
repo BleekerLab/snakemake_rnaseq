@@ -1,0 +1,4 @@
+channels:
+  - bioconda
+dependencies:
+  - python = 0.19.5
