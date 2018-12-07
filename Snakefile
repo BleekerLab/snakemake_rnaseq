@@ -6,11 +6,20 @@ transcriptome_fasta_URL = config["refs"]["transcriptomeFas"]
 transcriptome_gtf_URL = config["refs"]["transcriptomeGtf"]
 # create lists containing samplenames and conditions from the file: data/sampls.txt
 import pandas as pd
+units = pd.read_table(config["units"], dtype=str).set_index(["sample"], drop=False)
+
 SAMPLES = list(pd.read_table(config["units"])["sample"])
+
 #conditions = list(pd.read_table(config["units"])["condition"])
 fwd        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.read_table(config["units"])["fq1"])))
 rev        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.read_table(config["units"])["fq2"])))
 samplefile = config["units"]
+
+ 
+def get_fastq(wildcards):
+    return units.loc[(wildcards.sample), ["fq1","fq2"]].dropna()
+ 
+
 
 rule all:
     input:
@@ -58,14 +67,13 @@ rule get_ref_transcriptome_index:
 # trim and quality filter of the reads
 rule trimmomatic:
     input:
-        fq1             = lambda wildcards: fwd[wildcards.SAMPLES],
-        fq2             = lambda wildcards: rev[wildcards.SAMPLES],
+        fq             = get_fastq,
         adapters        = config["adapters"]
     output:
-        fw_reads        = "trimmed/{SAMPLES}_fw.fq",
-        rev_reads       = "trimmed/{SAMPLES}_rev.fq",
-        forwardUnpaired = "trimmed/{SAMPLES}_forward_unpaired.fastq",
-        reverseUnpaired = "trimmed/{SAMPLES}_reverse_unpaired.fastq"
+        fw_reads        = "trimmed/{sample}_fw.fq",
+        rev_reads       = "trimmed/{sample}_rev.fq",
+        forwardUnpaired = "trimmed/{sample}_forward_unpaired.fastq",
+        reverseUnpaired = "trimmed/{sample}_reverse_unpaired.fastq"
 #    message: "trimming reads"
 #        "logs/trimmomatic/{SAMPLES}.log"
     params:
@@ -81,8 +89,7 @@ rule trimmomatic:
     threads: 1
     shell:
         "trimmomatic PE {params.phred} -threads {threads} "
-        "{input.fq1} "
-        "{input.fq2} "
+        "{input.fq} "
         "{output.fw_reads} "
         "{output.forwardUnpaired} "
         "{output.rev_reads} "
