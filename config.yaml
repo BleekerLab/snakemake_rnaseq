@@ -1,10 +1,11 @@
-
-units: data/samples.txt        # Complete the tab sep value file with the path to the files and their conditions
+### Sample information
+units: data/samples.txt     
 
 ### Definition of the path Snakemake has to create
 working_dir: "temp/"
 result_dir: "results/"
 
+### Genome and annotations
 refs:
     genome:
         ftp://ftp.solgenomics.net/genomes/Petunia_axillaris/assembly/Petunia_axillaris_v1.6.2_genome.fasta
@@ -13,8 +14,7 @@ refs:
     transcriptomeGtf:
         "ftp://ftp.solgenomics.net/genomes/Petunia_axillaris/annotation/Petunia_axillaris_v1.6.2_CDS.gtf"
 
-adapters: "adapters.fasta"
-
+### Software parameters
 trimmomatic:
   adapters: "adapters.fasta"
   seedMisMatches: '2'
@@ -27,5 +27,5 @@ trimmomatic:
   minReadLength: '40'
   phred: "-phred33" # phred: for illumina >1.8 the quality score are encoded by phred33
 
-DESeq2:
+deseq2:
   maxfraction : '0.1'

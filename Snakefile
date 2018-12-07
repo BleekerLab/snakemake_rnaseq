@@ -1,16 +1,36 @@
-# define configfile
-configfile: "configs/configs.yaml"
-# fetch URL to transcriptome multi fasta from configfile
-genome_URL = config["refs"]["genome"]
-transcriptome_fasta_URL = config["refs"]["transcriptomeFas"]
-transcriptome_gtf_URL = config["refs"]["transcriptomeGtf"]
-# create lists containing samplenames and conditions from the file: data/sampls.txt
+#########################################
+# Snakemake pipeline for RNA-Seq analysis
+#########################################
+
+
+###########
+# Libraries
+###########
 import pandas as pd
+
+###############
+# Configuration
+###############
+configfile: "config.yaml" # where to find parameters
+WORKING_DIR = config["working_dir"]
+RESULT_DIR = config["result_dir"]
+
+# fetch URL to transcriptome multi fasta from configfile
+genome_url = config["refs"]["genome"]
+transcriptome_fasta_url = config["refs"]["transcriptome_fasta"]
+transcriptome_gtf_url= config["refs"]["transcriptome_gtf"]
+
+# create lists containing samplenames and conditions from the file: data/sampls.txt
 SAMPLES = list(pd.read_table(config["units"])["sample"])
 conditions = list(pd.read_table(config["units"])["condition"])
 fwd        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.read_table(config["units"])["fq1"])))
 rev        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.read_table(config["units"])["fq2"])))
 
+
+
+#################
+# Desired outputs
+#################
 rule all:
     input:
         countsTable = "results/counts.txt",
@@ -22,26 +42,40 @@ rule all:
         funcsList   = "results/stringtie_transcriptome_blast.txt"
     message:
         "Job done!"
+    shell:
+        "rm {WORKING_DIR}"
+
+
+#######
+# Rules
+#######
+
 # download genome with the use of the URL
 rule get_genome_fasta:
     output:
         "genome/genome.fasta"
-    message:"downloading required genomic fasta file"
-    shell: "wget -O {output} {genome_URL}"
+    message:
+        "downloading the required genomic fasta file"
+    shell:
+        "wget -O {output} {genome_url}"
 
 # download transcriptome fasta's with the use of the URL
 rule get_transcriptome_fasta:
     output:
         "genome/ref_transcriptome.fasta"
-    message:"downloading required transcriptome fasta file"
-    shell: "wget -O {output} {transcriptome_fasta_URL}"
+    message:
+        "downloading the required transcriptome fasta file"
+    shell:
+        "wget -O {output} {transcriptome_fasta_url}"
 
 # download transcriptome gtf/gff's with the use of the URL
 rule get_transcriptome_gtf:
     output:
         "genome/ref_transcriptome.gff"
-    message:"downloading required transcriptome gtf file"
-    shell: "wget -O {output} {transcriptome_gtf_URL}"
+    message:
+        "downloading required transcriptome gtf file"
+    shell:
+        "wget -O {output} {transcriptome_gtf_url}"
 
 # create transcriptome index, for blasting
 rule get_ref_transcriptome_index:
@@ -58,8 +92,7 @@ rule get_ref_transcriptome_index:
 rule trimmomatic:
     input:
         fq1             = lambda wildcards: fwd[wildcards.samples],
-        fq2             = lambda wildcards: rev[wildcards.samples],
-        adapters        = config["adapters"]
+        fq2             = lambda wildcards: rev[wildcards.samples]
     output:
         fw_reads        = "trimmed/{SAMPLES}_fw.fq",
         rev_reads       = "trimmed/{SAMPLES}_rev.fq",
@@ -76,7 +109,8 @@ rule trimmomatic:
         windowSize             =  str(config['trimmomatic']['windowSize']),
         avgMinQual             =  str(config['trimmomatic']['avgMinQual']),
         minReadLen             =  str(config['trimmomatic']['minReadLength']),
-        phred                  =  str(config["trimmomatic"]["phred"])
+        phred                  =  str(config["trimmomatic"]["phred"]),
+        adapters               = config["trimmomatic"]["adapters"]
     threads: 1
     shell:
         "trimmomatic PE {params.phred} -threads {threads} "
@@ -86,7 +120,7 @@ rule trimmomatic:
         "{output.forwardUnpaired} "
         "{output.rev_reads} "
         "{output.reverseUnpaired} "
-        "ILLUMINACLIP:{input.adapters}:{params.seedMisMatches}:{params.palindromeClipTreshold}:{params.simpleClipThreshhold} "
+        "ILLUMINACLIP:{params.adapters}:{params.seedMisMatches}:{params.palindromeClipTreshold}:{params.simpleClipThreshhold} "
         "LEADING:{params.LeadMinTrimQual} "
         "TRAILING:{params.TrailMinTrimQual} "
         "SLIDINGWINDOW:{params.windowSize}:{params.avgMinQual} "
