@@ -58,10 +58,13 @@ rule all:
 # Rules
 #######
 
-# download genome with the use of the URL
+
+#####################
+# Download references
+#####################
 rule get_genome_fasta:
     output:
-        "genome/genome.fasta"
+        WORKING_DIR + "genome/genome.fasta"
     message:
         "downloading the required genomic fasta file"
     conda:
@@ -69,19 +72,17 @@ rule get_genome_fasta:
     shell:
         "wget -O {output} {genome_url}"
 
-# download transcriptome fasta's with the use of the URL
 rule get_transcriptome_fasta:
     output:
-        "genome/ref_transcriptome.fasta"
+        WORKING_DIR + "genome/ref_transcriptome.fasta"
     message:
         "downloading the required transcriptome fasta file"
     shell:
         "wget -O {output} {transcriptome_fasta_url}"
 
-# download transcriptome gtf/gff's with the use of the URL
 rule get_transcriptome_gtf:
     output:
-        "genome/ref_transcriptome.gff"
+        WORKING_DIR + "genome/ref_transcriptome.gff"
     message:
         "downloading required transcriptome gtf file"
     shell:
@@ -90,21 +91,25 @@ rule get_transcriptome_gtf:
 # create transcriptome index, for blasting
 rule get_ref_transcriptome_index:
     input:
-        "genome/ref_transcriptome.fasta"
+        WORKING_DIR + "genome/ref_transcriptome.fasta"
     output:
-        ["genome/ref_transcriptome.fasta." + i for i in ("psq", "phr", "pin")]
+        [WORKING_DIR + "genome/ref_transcriptome.fasta." + i for i in ("psq", "phr", "pin")]
     conda:
         "envs/blast.yaml"
     shell:
         "makeblastdb -in {input} -dbtype prot"
 
+##################################
+# Fastq QC before / after trimming
+##################################
 # create quality reports of original reads
 rule fastqc_before_trimming:
     input:
         fwd = get_forward_fastq,
         rev = get_reverse_fastq
     output:
-        RESULT_DIR + "fastqc/{sample}.original.html"
+        html = RESULT_DIR + "fastqc/{sample}.original.html",
+        json = RESULT_DIR + "fastqc/{sample}.original.json"
     log:
         RESULT_DIR + "logs/fastqc/{sample}.fastp.log"
     params:
@@ -114,19 +119,19 @@ rule fastqc_before_trimming:
     conda:
         "envs/fastp.yaml"
     shell:
-        "fastp -i {input.fwd} -I {input.rev} -h {output} 2>{log}"
+        "fastp -i {input.fwd} -I {input.rev} -h {output.html} -j {output.json} 2>{log}"
 
 # trim and quality filter of the reads
 rule trimmomatic:
     input:
         get_fastq
     output:
-        fw_reads        = "trimmed/{sample}_fw.fq",
-        rev_reads       = "trimmed/{sample}_rev.fq",
-        forwardUnpaired = "trimmed/{sample}_forward_unpaired.fastq",
-        reverseUnpaired = "trimmed/{sample}_reverse_unpaired.fastq"
+        fw_reads        = WORKING_DIR + "trimmed/{sample}_fw.fq",
+        rev_reads       = WORKING_DIR + "trimmed/{sample}_rev.fq",
+        forwardUnpaired = WORKING_DIR + "trimmed/{sample}_forward_unpaired.fastq",
+        reverseUnpaired = WORKING_DIR + "trimmed/{sample}_reverse_unpaired.fastq"
     message:
-        "trimming reads"
+        "trimming {wildcards.sample} reads"
     conda:
         "envs/trimmomatic.yaml"
     log:
@@ -159,10 +164,11 @@ rule trimmomatic:
 # create quality reports of trimmed reads
 rule fastqc_after_trimming:
     input:
-        fwd = "trimmed/{sample}_fw.fq",
-        rev = "trimmed/{sample}_rev.fq"
+        fwd = WORKING_DIR + "trimmed/{sample}_fw.fq",
+        rev = WORKING_DIR + "trimmed/{sample}_rev.fq"
     output:
-        RESULT_DIR + "fastqc/{sample}.trimmed.html"
+        html = RESULT_DIR + "fastqc/{sample}.trimmed.html",
+        json = RESULT_DIR + "fastqc/{sample}.trimmed.json",
     log:
         RESULT_DIR + "logs/fastqc/{sample}.fastp.log"
     params:
@@ -172,5 +178,51 @@ rule fastqc_after_trimming:
     conda:
         "envs/fastp.yaml"
     shell:
-        "fastp -i {input.fwd} -I {input.rev} -h {output} 2>{log}"
+        "fastp -i {input.fwd} -I {input.rev} -h {output.html} -j {output.json} 2>{log}"
+
+
+#########################
+# RNA-Seq read alignement
+#########################
+rule index:
+    input:
+        WORKING_DIR + "genome/genome.fasta"
+    output:
+        [WORKING_DIR + "genome/genome." + str(i) + ".ht2" for i in range(1,9)]
+    message:
+        "indexing genome"
+    params:
+        "genome/genome"
+    conda:
+        "envs/hisat2.yaml"
+    threads: 10
+    shell:
+        "hisat2-build -p {threads} {input} {params} --quiet"
+
+rule hisat_mapping:
+    input:
+        fwd   = WORKING_DIR + "trimmed/{sample}_fw.fq",
+        rev   = WORKING_DIR + "trimmed/{sample}_rev.fq",
+        forwardUnpaired = WORKING_DIR + "trimmed/{sample}_forward_unpaired.fastq",
+        reverseUnpaired = WORKING_DIR + "trimmed/{sample}_reverse_unpaired.fastq",
+        indexFiles = [WORKING_DIR + "genome/genome." + str(i) + ".ht2" for i in range(1,9)]
+    output:
+        bamp  = temp(WORKING_DIR + "mapped/{sample}.pairs.bam"),
+        bamf  = temp(WORKING_DIR + "mapped/{sample}.fwd.bam"),
+        bamr  = temp(WORKING_DIR + "mapped/{sample}.rev.bam"),
+        bams  = WORKING_DIR + "mapped/{sample}.bam"
+    params:
+        indexName = WORKING_DIR + "genome/genome"
+    message:
+        "mapping reads to genome to bam files."
+    conda:
+        "envs/hisat2_mapping.yaml"
+    threads: 10
+    shell:
+        """
+        hisat2 -p {threads} --dta -x {params.indexName} -1 {input.fwd} -2 {input.rev} | samtools view -Sb -F 4 -o {output.bamp}
+        hisat2 -p {threads} --dta -x {params.indexName} -U {input.forwardUnpaired} | samtools view -Sb -F 4 -o {output.bamf}
+        hisat2 -p {threads} --dta -x {params.indexName} -U {input.reverseUnpaired} | samtools view -Sb -F 4 -o {output.bamr}
+        samtools merge {output.bams} {output.bamp} {output.bamf} {output.bamr}
+        """
 
