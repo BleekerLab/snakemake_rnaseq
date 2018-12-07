@@ -33,6 +33,10 @@ CONDITIONS = list(pd.read_table(config["units"])["condition"])
 fwd        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.read_table(config["units"])["fq1"])))
 rev        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.read_table(config["units"])["fq2"])))
 
+
+###########################
+# Input functions for rules
+###########################
 def get_fastq(wildcards):
     return units.loc[(wildcards.sample), ["fq1", "fq2"]].dropna()
 
@@ -42,17 +46,19 @@ def get_forward_fastq(wildcards):
 def get_reverse_fastq(wildcards):
     return units.loc[(wildcards.sample), ["fq2"]].dropna()
 
+def get_bams():
+    bams = [b for bam in glob("mapped/*.bam")]
+    return bams
 
 #################
 # Desired outputs
 #################
 rule all:
     input:
-        FASTQC = expand(RESULT_DIR + "fastqc/{sample}.{step}.html", sample = SAMPLES,step=["original","trimmed"])
+        FASTQC = expand(RESULT_DIR + "fastqc/{sample}.{step}.html", sample = SAMPLES,step=["original","trimmed"]),
+        GTF = WORKING_DIR + "genome/stringtie_transcriptome.gtf"
     message:
         "Job done! Removing temporary directory"
-    shell:
-        "rm -r {WORKING_DIR}"
 
 #######
 # Rules
@@ -225,4 +231,34 @@ rule hisat_mapping:
         hisat2 -p {threads} --dta -x {params.indexName} -U {input.reverseUnpaired} | samtools view -Sb -F 4 -o {output.bamr}
         samtools merge {output.bams} {output.bamp} {output.bamf} {output.bamr}
         """
+
+###########################################
+# Create a de novo transcriptome annotation
+###########################################
+rule merge_bams:
+    input:
+        get_bams
+    output:
+        merged = temp(WORKING_DIR + "mapped/merged.bam"),
+        bam_sorted = WORKING_DIR + "mapped/merged_sorted.bam"
+    conda:
+        "envs/samtools.yaml"
+    shell:
+        """
+        samtools merge {output.merged} {input}
+        samtools sort {output.merged} -o {output.bam_sorted}
+        """
+
+rule create_stringtie_transcriptome_annotation:
+    input:
+        bam = WORKING_DIR + "mapped/merged_sorted.bam",
+        gff = WORKING_DIR + "genome/ref_transcriptome.gff"
+    output:
+        WORKING_DIR + "genome/stringtie_transcriptome.gtf"
+    conda:
+        "envs/stringtie.yaml"
+    message:
+        "Assembling RNA-Seq alignments into transcripts and producing a GTF annotation"
+    shell:
+        "stringtie -G {input.gff} -o {output} {input.bam}"
 
