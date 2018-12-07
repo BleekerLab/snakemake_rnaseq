@@ -7,9 +7,10 @@ transcriptome_gtf_URL = config["refs"]["transcriptomeGtf"]
 # create lists containing samplenames and conditions from the file: data/sampls.txt
 import pandas as pd
 SAMPLES = list(pd.read_table(config["units"])["sample"])
-conditions = list(pd.read_table(config["units"])["condition"])
+#conditions = list(pd.read_table(config["units"])["condition"])
 fwd        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.read_table(config["units"])["fq1"])))
 rev        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.read_table(config["units"])["fq2"])))
+samplefile = config["units"]
 
 rule all:
     input:
@@ -57,8 +58,8 @@ rule get_ref_transcriptome_index:
 # trim and quality filter of the reads
 rule trimmomatic:
     input:
-        fq1             = lambda wildcards: fwd[wildcards.samples],
-        fq2             = lambda wildcards: rev[wildcards.samples],
+        fq1             = lambda wildcards: fwd[wildcards.SAMPLES],
+        fq2             = lambda wildcards: rev[wildcards.SAMPLES],
         adapters        = config["adapters"]
     output:
         fw_reads        = "trimmed/{SAMPLES}_fw.fq",
@@ -119,7 +120,7 @@ rule index:
     params:
         "genome/genome"
     conda:
-        "envs/Hisat.yaml"
+        "envs/hisat2.yaml"
     threads: 10
     shell:"hisat2-build -p {threads} {input} {params}"
 
@@ -154,8 +155,8 @@ rule merge_bams:
     input:
         expand("mapped/{sample}.bam", sample=SAMPLES),
     output:
-        merged = temp("mapped/merged.bam"),
-        sorted = "mapped/merged_sorted.bam"
+        merged = temp("merged.bam"),
+        sorted = "merged_sorted.bam"
     conda:
         "envs/Samtools.yaml"
     shell:
@@ -166,7 +167,7 @@ rule merge_bams:
 
 rule create_stringtie_transcriptome:
     input:
-        bam = "mapped/merged_sorted.bam",
+        bam = "merged_sorted.bam",
         Rtc = "genome/ref_transcriptome.gff"
     output:
         "genome/stringtie_transcriptome.gtf"
@@ -198,12 +199,12 @@ rule blast_for_funtions:
     output:
         "results/stringtie_transcriptome_blast.txt"
     params:
-        evalue = "10"
-
+        evalue = "10",
+        threads= "5"
     conda:
         "envs/blast.yaml"
     shell:
-        "blastx -query {input.newTct} -db {input.refTct} -outfmt \"6 qseqid qlen slen evalue salltitles\" -out {output} -max_target_seqs 1"
+        "blastx -query {input.newTct} -db {input.refTct} -outfmt \"6 qseqid qlen slen evalue salltitles\" -out {output} -max_target_seqs 1 -num_threads {params.threads}"
 
 
 rule create_counts_table:
@@ -222,7 +223,7 @@ rule create_counts_table:
 rule DESeq2_analysis:
     input:
         counts      = "results/counts.txt",
-        samplefile  = config["units"]
+        samplefile  = samplefile
     output:
         "results/result.csv"
     message:
@@ -230,7 +231,7 @@ rule DESeq2_analysis:
     params:
         maxfraction = float(config["DESeq2"]["maxfraction"])
     conda:
-        "envs/deseq.yaml"
+        "envs/DESeq2.yaml"
     shell:
         "Rscript scripts/DESeq2.R -c {input.counts} -s {input.samplefile} -o {output} -m {params.maxfraction}"
 
