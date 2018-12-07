@@ -54,7 +54,6 @@ rule all:
     shell:
         "rm -r {WORKING_DIR}"
 
-
 #######
 # Rules
 #######
@@ -65,6 +64,8 @@ rule get_genome_fasta:
         "genome/genome.fasta"
     message:
         "downloading the required genomic fasta file"
+    conda:
+        "envs/wget.yaml"
     shell:
         "wget -O {output} {genome_url}"
 
@@ -119,8 +120,6 @@ rule fastqc_before_trimming:
 rule trimmomatic:
     input:
         get_fastq
-    #    fq1             = lambda wildcards: fwd[wildcards.samples],
-     #   fq2             = lambda wildcards: rev[wildcards.samples]
     output:
         fw_reads        = "trimmed/{sample}_fw.fq",
         rev_reads       = "trimmed/{sample}_rev.fq",
@@ -128,6 +127,8 @@ rule trimmomatic:
         reverseUnpaired = "trimmed/{sample}_reverse_unpaired.fastq"
     message:
         "trimming reads"
+    conda:
+        "envs/trimmomatic.yaml"
     log:
         "logs/trimmomatic/{sample}.log"
     params:
@@ -140,7 +141,7 @@ rule trimmomatic:
         avgMinQual             =  str(config['trimmomatic']['avgMinQual']),
         minReadLen             =  str(config['trimmomatic']['minReadLength']),
         phred                  =  str(config["trimmomatic"]["phred"]),
-        adapters               = config["trimmomatic"]["adapters"]
+        adapters               = str(config["trimmomatic"]["adapters"])
     threads: 1
     shell:
         "trimmomatic PE {params.phred} -threads {threads} "
