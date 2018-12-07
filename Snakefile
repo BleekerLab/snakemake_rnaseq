@@ -20,58 +20,82 @@ genome_url = config["refs"]["genome"]
 transcriptome_fasta_url = config["refs"]["transcriptome_fasta"]
 transcriptome_gtf_url= config["refs"]["transcriptome_gtf"]
 
-# create lists containing samplenames and conditions from the file: data/sampls.txt
-SAMPLES = list(pd.read_table(config["units"])["sample"])
-conditions = list(pd.read_table(config["units"])["condition"])
+########################
+# Samples and conditions
+########################
+
+# read the tabulated separated table containing the sample, condition and fastq file information∂DE
+units = pd.read_table(config["units"], dtype=str).set_index(["sample"], drop=False)
+
+# create lists containing the sample names and conditions
+SAMPLES = units.index.get_level_values('sample').unique().tolist()
+CONDITIONS = list(pd.read_table(config["units"])["condition"])
 fwd        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.read_table(config["units"])["fq1"])))
 rev        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.read_table(config["units"])["fq2"])))
+samplefile = config["units"]
 
 
+def get_fastq(wildcards):
+    return units.loc[(wildcards.sample), ["fq1","fq2"]].dropna()
+
+
+
+
+###########################
+# Input functions for rules
+###########################
+def get_fastq(wildcards):
+    return units.loc[(wildcards.sample), ["fq1", "fq2"]].dropna()
+
+def get_forward_fastq(wildcards):
+    return units.loc[(wildcards.sample), ["fq1"]].dropna()
+
+def get_reverse_fastq(wildcards):
+    return units.loc[(wildcards.sample), ["fq2"]].dropna()
+
+def get_bams():
+    bams = [b for bam in glob("mapped/*.bam")]
+    return bams
 
 #################
 # Desired outputs
 #################
 rule all:
     input:
-        countsTable = "results/counts.txt",
-        resultsFile = "results/result.csv",
-        final       = "results/final.txt",
-        fwd         = expand("results/fastqc/{sample}_fw_fastqc.zip", sample = SAMPLES),
-        rev         = expand("results/fastqc/{sample}_rev_fastqc.zip", sample = SAMPLES),
-        fas         = "genome/stringtie_transcriptome.fasta",
-        funcsList   = "results/stringtie_transcriptome_blast.txt"
+        FASTQC = expand(RESULT_DIR + "fastqc/{sample}.{step}.html", sample = SAMPLES,step=["original","trimmed"]),
+        GTF = WORKING_DIR + "genome/stringtie_transcriptome.gtf"
     message:
-        "Job done!"
-    shell:
-        "rm {WORKING_DIR}"
-
+        "Job done! Removing temporary directory"
 
 #######
 # Rules
 #######
 
-# download genome with the use of the URL
+
+#####################
+# Download references
+#####################
 rule get_genome_fasta:
     output:
-        "genome/genome.fasta"
+        WORKING_DIR + "genome/genome.fasta"
     message:
         "downloading the required genomic fasta file"
+    conda:
+        "envs/wget.yaml"
     shell:
         "wget -O {output} {genome_url}"
 
-# download transcriptome fasta's with the use of the URL
 rule get_transcriptome_fasta:
     output:
-        "genome/ref_transcriptome.fasta"
+        WORKING_DIR + "genome/ref_transcriptome.fasta"
     message:
         "downloading the required transcriptome fasta file"
     shell:
         "wget -O {output} {transcriptome_fasta_url}"
 
-# download transcriptome gtf/gff's with the use of the URL
 rule get_transcriptome_gtf:
     output:
-        "genome/ref_transcriptome.gff"
+        WORKING_DIR + "genome/ref_transcriptome.gff"
     message:
         "downloading required transcriptome gtf file"
     shell:
@@ -80,26 +104,51 @@ rule get_transcriptome_gtf:
 # create transcriptome index, for blasting
 rule get_ref_transcriptome_index:
     input:
-        "genome/ref_transcriptome.fasta"
+        WORKING_DIR + "genome/ref_transcriptome.fasta"
     output:
-        ["genome/ref_transcriptome.fasta." + i for i in ("psq", "phr", "pin")]
+        [WORKING_DIR + "genome/ref_transcriptome.fasta." + i for i in ("psq", "phr", "pin")]
     conda:
         "envs/blast.yaml"
     shell:
         "makeblastdb -in {input} -dbtype prot"
 
+##################################
+# Fastq QC before / after trimming
+##################################
+# create quality reports of original reads
+rule fastqc_before_trimming:
+    input:
+        fwd = get_forward_fastq,
+        rev = get_reverse_fastq
+    output:
+        html = RESULT_DIR + "fastqc/{sample}.original.html",
+        json = RESULT_DIR + "fastqc/{sample}.original.json"
+    log:
+        RESULT_DIR + "logs/fastqc/{sample}.fastp.log"
+    params:
+        RESULT_DIR + "fastqc/"
+    message:
+        "Quality check of trimmed {wildcards.sample} sample with fastp"
+    conda:
+        "envs/fastp.yaml"
+    shell:
+        "fastp -i {input.fwd} -I {input.rev} -h {output.html} -j {output.json} 2>{log}"
+
 # trim and quality filter of the reads
 rule trimmomatic:
     input:
-        fq1             = lambda wildcards: fwd[wildcards.samples],
-        fq2             = lambda wildcards: rev[wildcards.samples]
+        get_fastq
     output:
-        fw_reads        = "trimmed/{SAMPLES}_fw.fq",
-        rev_reads       = "trimmed/{SAMPLES}_rev.fq",
-        forwardUnpaired = "trimmed/{SAMPLES}_forward_unpaired.fastq",
-        reverseUnpaired = "trimmed/{SAMPLES}_reverse_unpaired.fastq"
-#    message: "trimming reads"
-#        "logs/trimmomatic/{SAMPLES}.log"
+        fw_reads        = WORKING_DIR + "trimmed/{sample}_fw.fq",
+        rev_reads       = WORKING_DIR + "trimmed/{sample}_rev.fq",
+        forwardUnpaired = WORKING_DIR + "trimmed/{sample}_forward_unpaired.fastq",
+        reverseUnpaired = WORKING_DIR + "trimmed/{sample}_reverse_unpaired.fastq"
+    message:
+        "trimming {wildcards.sample} reads"
+    conda:
+        "envs/trimmomatic.yaml"
+    log:
+        "logs/trimmomatic/{sample}.log"
     params:
         seedMisMatches         =  str(config['trimmomatic']['seedMisMatches']),
         palindromeClipTreshold =  str(config['trimmomatic']['palindromeClipTreshold']),
@@ -110,12 +159,11 @@ rule trimmomatic:
         avgMinQual             =  str(config['trimmomatic']['avgMinQual']),
         minReadLen             =  str(config['trimmomatic']['minReadLength']),
         phred                  =  str(config["trimmomatic"]["phred"]),
-        adapters               = config["trimmomatic"]["adapters"]
+        adapters               = str(config["trimmomatic"]["adapters"])
     threads: 1
     shell:
         "trimmomatic PE {params.phred} -threads {threads} "
-        "{input.fq1} "
-        "{input.fq2} "
+        "{input.fq} "
         "{output.fw_reads} "
         "{output.forwardUnpaired} "
         "{output.rev_reads} "
@@ -124,57 +172,64 @@ rule trimmomatic:
         "LEADING:{params.LeadMinTrimQual} "
         "TRAILING:{params.TrailMinTrimQual} "
         "SLIDINGWINDOW:{params.windowSize}:{params.avgMinQual} "
-        "MINLEN:{params.minReadLen}" #" 2>{log}"
+        "MINLEN:{params.minReadLen} 2>{log}"
 
 # create quality reports of trimmed reads
-rule fastqc:
+rule fastqc_after_trimming:
     input:
-        fwd = "trimmed/{SAMPLES}_fw.fq",
-        rev = "trimmed/{SAMPLES}_rev.fq",
+        fwd = WORKING_DIR + "trimmed/{sample}_fw.fq",
+        rev = WORKING_DIR + "trimmed/{sample}_rev.fq"
     output:
-        fwd = "results/fastqc/{SAMPLES}_fw_fastqc.zip",
-        rev = "results/fastqc/{SAMPLES}_rev_fastqc.zip"
+        html = RESULT_DIR + "fastqc/{sample}.trimmed.html",
+        json = RESULT_DIR + "fastqc/{sample}.trimmed.json",
     log:
-        "results/logs/fastqc/{SAMPLES}.fastqc.log"
+        RESULT_DIR + "logs/fastqc/{sample}.fastp.log"
     params:
-        "results/fastqc/"
+        RESULT_DIR + "fastqc/"
     message:
-        "Quality check of trimmed samples with FASTQC" 		#removed, it was not working
+        "Quality check of trimmed {wildcards.sample} sample with fastp"
+    conda:
+        "envs/fastp.yaml"
     shell:
-        "fastqc --outdir={params} {input.fwd} {input.rev}"
+        "fastp -i {input.fwd} -I {input.rev} -h {output.html} -j {output.json} 2>{log}"
 
 
+#########################
+# RNA-Seq read alignement
+#########################
 rule index:
     input:
-        "genome/genome.fasta"
+        WORKING_DIR + "genome/genome.fasta"
     output:
-        ["genome/genome." + str(i) + ".ht2" for i in range(1,9)]
-    message:"indexing genome"
+        [WORKING_DIR + "genome/genome." + str(i) + ".ht2" for i in range(1,9)]
+    message:
+        "indexing genome"
     params:
         "genome/genome"
     conda:
-        "envs/Hisat.yaml"
+        "envs/hisat2.yaml"
     threads: 10
-    shell:"hisat2-build -p {threads} {input} {params}"
+    shell:
+        "hisat2-build -p {threads} {input} {params} --quiet"
 
 rule hisat_mapping:
     input:
-        fwd   = "trimmed/{SAMPLES}_fw.fq",
-        rev   = "trimmed/{SAMPLES}_rev.fq",
-        forwardUnpaired = "trimmed/{SAMPLES}_forward_unpaired.fastq",
-        reverseUnpaired = "trimmed/{SAMPLES}_reverse_unpaired.fastq",
-        indexFiles = ["genome/genome." + str(i) + ".ht2" for i in range(1,9)]
+        fwd   = WORKING_DIR + "trimmed/{sample}_fw.fq",
+        rev   = WORKING_DIR + "trimmed/{sample}_rev.fq",
+        forwardUnpaired = WORKING_DIR + "trimmed/{sample}_forward_unpaired.fastq",
+        reverseUnpaired = WORKING_DIR + "trimmed/{sample}_reverse_unpaired.fastq",
+        indexFiles = [WORKING_DIR + "genome/genome." + str(i) + ".ht2" for i in range(1,9)]
     output:
-        bamp  = temp("mapped/{SAMPLES}pairs.bam"),
-        bamf  = temp("mapped/{SAMPLES}fwd.bam"),
-        bamr  = temp("mapped/{SAMPLES}rev.bam"),
-        bams  = "mapped/{SAMPLES}.bam"
+        bamp  = temp(WORKING_DIR + "mapped/{sample}.pairs.bam"),
+        bamf  = temp(WORKING_DIR + "mapped/{sample}.fwd.bam"),
+        bamr  = temp(WORKING_DIR + "mapped/{sample}.rev.bam"),
+        bams  = WORKING_DIR + "mapped/{sample}.bam"
     params:
-        indexName = "genome/genome"
+        indexName = WORKING_DIR + "genome/genome"
     message:
         "mapping reads to genome to bam files."
     conda:
-        "envs/hisat2.yaml"
+        "envs/hisat2_mapping.yaml"
     threads: 10
     shell:
         """
@@ -184,23 +239,26 @@ rule hisat_mapping:
         samtools merge {output.bams} {output.bamp} {output.bamf} {output.bamr}
         """
 
+###########################################
+# Create a de novo transcriptome annotation
+###########################################
 rule merge_bams:
     input:
-        expand("mapped/{sample}.bam", sample=SAMPLES),
+        get_bams
     output:
-        merged = temp("mapped/merged.bam"),
-        sorted = "mapped/merged_sorted.bam"
+        merged = temp(WORKING_DIR + "mapped/merged.bam"),
+        bam_sorted = WORKING_DIR + "mapped/merged_sorted.bam"
     conda:
-        "envs/Samtools.yaml"
+        "envs/samtools.yaml"
     shell:
         """
         samtools merge {output.merged} {input}
-        samtools sort {output.merged} -o {output.sorted}
+        samtools sort {output.merged} -o {output.bam_sorted}
         """
 
 rule create_stringtie_transcriptome:
     input:
-        bam = "mapped/merged_sorted.bam",
+        bam = "merged_sorted.bam",
         Rtc = "genome/ref_transcriptome.gff"
     output:
         "genome/stringtie_transcriptome.gtf"
@@ -232,22 +290,20 @@ rule blast_for_funtions:
     output:
         "results/stringtie_transcriptome_blast.txt"
     params:
-        evalue = "10"
-
+        evalue = "10",
+        threads= "5"
     conda:
         "envs/blast.yaml"
     shell:
-        "blastx -query {input.newTct} -db {input.refTct} -outfmt \"6 qseqid qlen slen evalue salltitles\" -out {output} -max_target_seqs 1"
+        "blastx -query {input.newTct} -db {input.refTct} -outfmt \"6 qseqid qlen slen evalue salltitles\" -out {output} -max_target_seqs 1 -num_threads {params.threads}"
 
 
 rule create_counts_table:
     input:
-        bams = expand("mapped/{sample}.bam", sample=SAMPLES),
-        Ntx  = "genome/stringtie_transcriptome.gtf"
+        bam = WORKING_DIR + "mapped/merged_sorted.bam",
+        gff = WORKING_DIR + "genome/ref_transcriptome.gff"
     output:
-        "results/counts.txt"
-    #params:
-        # some parameters
+        WORKING_DIR + "genome/stringtie_transcriptome.gtf"
     conda:
         "envs/subread.yaml"
     shell:
@@ -256,7 +312,7 @@ rule create_counts_table:
 rule DESeq2_analysis:
     input:
         counts      = "results/counts.txt",
-        samplefile  = config["units"]
+        samplefile  = samplefile
     output:
         "results/result.csv"
     message:
@@ -264,16 +320,6 @@ rule DESeq2_analysis:
     params:
         maxfraction = float(config["DESeq2"]["maxfraction"])
     conda:
-        "envs/deseq.yaml"
+        "envs/DESeq2.yaml"
     shell:
-        "Rscript scripts/DESeq2.R -c {input.counts} -s {input.samplefile} -o {output} -m {params.maxfraction}"
-
-rule results_function:
-    input:
-        fa    = "genome/ref_transcriptome.fasta",
-        blast = "results/stringtie_transcriptome_blast.txt",
-        deseq = "results/result.csv"
-    output:
-        final = "results/final.txt"
-    shell:
-        "python DE_with_Function.py {input.fa} {input.blast} {input.deseq} {output.final}"
+        "stringtie -G {input.gff} -o {output} {input.bam}"
