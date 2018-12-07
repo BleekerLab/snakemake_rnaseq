@@ -39,13 +39,16 @@ def get_fastq(wildcards):
 def get_forward_fastq(wildcards):
     return units.loc[(wildcards.sample), ["fq1"]].dropna()
 
+def get_reverse_fastq(wildcards):
+    return units.loc[(wildcards.sample), ["fq2"]].dropna()
+
 
 #################
 # Desired outputs
 #################
 rule all:
     input:
-        FASTQC = expand(RESULT_DIR + "fastqc/{sample}.html", sample = SAMPLES)
+        FASTQC = expand(RESULT_DIR + "fastqc/{sample}.{step}.html", sample = SAMPLES,step=["original","trimmed"])
     message:
         "Job done! Removing temporary directory"
     shell:
@@ -95,8 +98,22 @@ rule get_ref_transcriptome_index:
         "makeblastdb -in {input} -dbtype prot"
 
 # create quality reports of original reads
-#rule fastqc_before_trimming:
-
+rule fastqc_before_trimming:
+    input:
+        fwd = get_forward_fastq,
+        rev = get_reverse_fastq
+    output:
+        RESULT_DIR + "fastqc/{sample}.original.html"
+    log:
+        RESULT_DIR + "logs/fastqc/{sample}.fastp.log"
+    params:
+        RESULT_DIR + "fastqc/"
+    message:
+        "Quality check of trimmed {wildcards.sample} sample with fastp"
+    conda:
+        "envs/fastp.yaml"
+    shell:
+        "fastp -i {input.fwd} -I {input.rev} -h {output} 2>{log}"
 
 # trim and quality filter of the reads
 rule trimmomatic:
@@ -144,7 +161,7 @@ rule fastqc_after_trimming:
         fwd = "trimmed/{sample}_fw.fq",
         rev = "trimmed/{sample}_rev.fq"
     output:
-        RESULT_DIR + "fastqc/{sample}.html"
+        RESULT_DIR + "fastqc/{sample}.trimmed.html"
     log:
         RESULT_DIR + "logs/fastqc/{sample}.fastp.log"
     params:
