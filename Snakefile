@@ -320,6 +320,16 @@ rule DESeq2_analysis:
     params:
         maxfraction = float(config["DESeq2"]["maxfraction"])
     conda:
-        "envs/DESeq2.yaml"
+        "envs/deseq.yaml"
     shell:
-        "stringtie -G {input.gff} -o {output} {input.bam}"
+        "Rscript scripts/DESeq2.R -c {input.counts} -s {input.samplefile} -o {output} -m {params.maxfraction}"
+        
+rule results_function:
+    input:
+        fa    = "genome/ref_transcriptome.fasta",
+        blast = "results/stringtie_transcriptome_blast.txt",
+        deseq = "results/result.csv"
+    output:
+        final = "results/final.txt"
+    shell:
+        "python scripts/DE_with_Function.py {input.fa} {input.blast} {input.deseq} {output.final}"
