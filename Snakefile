@@ -326,7 +326,7 @@ rule DESeq2_analysis:
         
 rule results_function:
     input:
-        fa    = "genome/ref_transcriptome.fasta",
+        fa    = "genome/stringtie_transcriptome.fasta",
         blast = "results/stringtie_transcriptome_blast.txt",
         deseq = "results/result.csv"
     output:
