@@ -76,5 +76,10 @@ for(i in levels(condition)){
   }
 }
 
+# create first column containing the genenames.
+resdata$genes <- rownames(resdata)
+resdata <- merge(as.data.frame(resdata["genes"]), as.data.frame(resdata[,2:ncol(resdata)-1]), by="row.names", sort=FALSE)
+resdata$Row.names <- NULL
+
 # write the data to a file.
 write.table(resdata, file=opt$outdir,sep = "\t",quote=F,row.names=T)
