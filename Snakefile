@@ -246,8 +246,8 @@ rule merge_bams:
     input:
         get_bams
     output:
-        merged = temp(WORKING_DIR + "mapped/merged.bam"),
-        bam_sorted = WORKING_DIR + "mapped/merged_sorted.bam"
+        merged = temp(WORKING_DIR + "merged.bam"),
+        bam_sorted = WORKING_DIR + "merged_sorted.bam"
     conda:
         "envs/samtools.yaml"
     shell:
@@ -258,10 +258,10 @@ rule merge_bams:
 
 rule create_stringtie_transcriptome:
     input:
-        bam = "merged_sorted.bam",
-        Rtc = "genome/ref_transcriptome.gff"
+        bam = WORKING_DIR + "merged_sorted.bam",
+        Rtc = WORKING_DIR + "genome/ref_transcriptome.gff"
     output:
-        "genome/stringtie_transcriptome.gtf"
+        WORKING_DIR + "genome/stringtie_transcriptome.gtf"
     #params:
         # some parameters
     conda:
@@ -273,10 +273,10 @@ rule create_stringtie_transcriptome:
 
 rule gtf_to_fasta:
     input:
-        Ntx  = "genome/stringtie_transcriptome.gtf",
-        gen  = "genome/genome.fasta"
+        Ntx  = WORKING_DIR + "genome/stringtie_transcriptome.gtf",
+        gen  = WORKING_DIR + "genome/genome.fasta"
     output:
-        "genome/stringtie_transcriptome.fasta"
+        WORKING_DIR + "genome/stringtie_transcriptome.fasta"
     conda:
         "envs/Tophat.yaml"
     shell:
@@ -284,11 +284,11 @@ rule gtf_to_fasta:
 
 rule blast_for_funtions:
     input:
-        newTct = "genome/stringtie_transcriptome.fasta",
-        refTct = "genome/ref_transcriptome.fasta",
-        indexFiles = ["genome/ref_transcriptome.fasta." + i for i in ("psq", "phr", "pin")]
+        newTct = WORKING_DIR + "genome/stringtie_transcriptome.fasta",
+        refTct = WORKING_DIR + "genome/ref_transcriptome.fasta",
+        indexFiles = WORKING_DIR + ["genome/ref_transcriptome.fasta." + i for i in ("psq", "phr", "pin")]
     output:
-        "results/stringtie_transcriptome_blast.txt"
+        WORKING_DIR + "results/stringtie_transcriptome_blast.txt"
     params:
         evalue = "10",
         threads= "5"
@@ -311,10 +311,10 @@ rule create_counts_table:
 
 rule DESeq2_analysis:
     input:
-        counts      = "results/counts.txt",
+        counts      = WORKING_DIR + "results/counts.txt",
         samplefile  = samplefile
     output:
-        "results/result.csv"
+        WORKING_DIR + "results/result.csv"
     message:
         "normalizing read counts en creating differential expression table"
     params:
@@ -326,9 +326,9 @@ rule DESeq2_analysis:
         
 rule results_function:
     input:
-        fa    = "genome/stringtie_transcriptome.fasta",
-        blast = "results/stringtie_transcriptome_blast.txt",
-        deseq = "results/result.csv"
+        fa    = WORKING_DIR + "genome/stringtie_transcriptome.fasta",
+        blast = WORKING_DIR + "results/stringtie_transcriptome_blast.txt",
+        deseq = WORKING_DIR + "results/result.csv"
     output:
         final = "results/final.txt"
     shell:
