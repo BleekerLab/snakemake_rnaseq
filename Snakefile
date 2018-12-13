@@ -33,7 +33,8 @@ CONDITIONS = list(pd.read_table(config["units"])["condition"])
 fwd        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.read_table(config["units"])["fq1"])))
 rev        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.read_table(config["units"])["fq2"])))
 samplefile = config["units"]
- print(SAMPLES)
+
+print(SAMPLES)
 
 def get_fastq(wildcards):
     return units.loc[(wildcards.sample), ["fq1","fq2"]].dropna()
