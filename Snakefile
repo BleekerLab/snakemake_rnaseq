@@ -286,7 +286,7 @@ rule blast_for_funtions:
     input:
         newTct = WORKING_DIR + "genome/stringtie_transcriptome.fasta",
         refTct = WORKING_DIR + "genome/ref_transcriptome.fasta",
-        indexFiles = WORKING_DIR + ["genome/ref_transcriptome.fasta." + i for i in ("psq", "phr", "pin")]
+        indexFiles = [WORKING_DIR + "genome/ref_transcriptome.fasta." + i for i in ("psq", "phr", "pin")]
     output:
         WORKING_DIR + "results/stringtie_transcriptome_blast.txt"
     params:
