@@ -195,7 +195,7 @@ rule index:
     message:
         "indexing genome"
     params:
-        "genome/genome"
+        WORKING_DIR + "genome/genome"
     conda:
         "envs/hisat2.yaml"
     threads: 10
