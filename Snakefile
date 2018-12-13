@@ -163,7 +163,7 @@ rule trimmomatic:
     threads: 1
     shell:
         "trimmomatic PE {params.phred} -threads {threads} "
-        "{input.fq} "
+        "{input} "
         "{output.fw_reads} "
         "{output.forwardUnpaired} "
         "{output.rev_reads} "
