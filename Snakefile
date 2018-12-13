@@ -77,6 +77,7 @@ rule all:
 #####################
 # Download references
 #####################
+
 rule get_genome_fasta:
     output:
         WORKING_DIR + "genome/genome.fasta"
@@ -103,20 +104,11 @@ rule get_transcriptome_gtf:
     shell:
         "wget -O {output} {transcriptome_gtf_url}"
 
-# create transcriptome index, for blasting
-rule get_ref_transcriptome_index:
-    input:
-        WORKING_DIR + "genome/ref_transcriptome.fasta"
-    output:
-        [WORKING_DIR + "genome/ref_transcriptome.fasta." + i for i in ("psq", "phr", "pin")]
-    conda:
-        "envs/blast.yaml"
-    shell:
-        "makeblastdb -in {input} -dbtype prot"
 
 ##################################
 # Fastq QC before / after trimming
 ##################################
+
 # create quality reports of original reads
 rule fastqc_before_trimming:
     input:
@@ -199,6 +191,7 @@ rule fastqc_after_trimming:
 #########################
 # RNA-Seq read alignement
 #########################
+
 rule index:
     input:
         WORKING_DIR + "genome/genome.fasta"
@@ -244,6 +237,7 @@ rule hisat_mapping:
 ###########################################
 # Create a de novo transcriptome annotation
 ###########################################
+
 rule merge_bams:
     input:
         expand(WORKING_DIR + "mapped/{sample}.bam", sample = SAMPLES)
@@ -278,6 +272,18 @@ rule create_stringtie_transcriptome:
 #  Blast new transcriptome to get hypothetical gene functions
 #############################################################
 
+# create transcriptome index, for blasting
+rule get_ref_transcriptome_index:
+    input:
+        WORKING_DIR + "genome/ref_transcriptome.fasta"
+    output:
+        [WORKING_DIR + "genome/ref_transcriptome.fasta." + i for i in ("psq", "phr", "pin")]
+    conda:
+        "envs/blast.yaml"
+    shell:
+        "makeblastdb -in {input} -dbtype prot"
+
+# get fasta's from gtf file
 rule gtf_to_fasta:
     input:
         Ntx  = WORKING_DIR + "genome/stringtie_transcriptome.gtf",
@@ -289,6 +295,7 @@ rule gtf_to_fasta:
     shell:
         "gtf_to_fasta {input.Ntx} {input.gen} {output}"
 
+# Do the blast
 rule blast_for_funtions:
     input:
         newTct = WORKING_DIR + "genome/stringtie_transcriptome.fasta",
@@ -341,10 +348,8 @@ rule DESeq2_analysis:
         "Rscript scripts/DESeq2.R -c {input.counts} -s {input.samplefile} -o {output} -m {params.maxfraction}"
 
         
-#########################################
+
 # combine differential expressions with hypothetical gene-functions
-#########################################
-        
 rule results_function:
     input:
         fa    = WORKING_DIR + "genome/stringtie_transcriptome.fasta",
