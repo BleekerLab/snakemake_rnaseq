@@ -63,7 +63,8 @@ def get_bams():
 rule all:
     input:
         FASTQC = expand(RESULT_DIR + "fastqc/{sample}.{step}.html", sample = SAMPLES,step=["original","trimmed"]),
-        GTF = WORKING_DIR + "genome/stringtie_transcriptome.gtf"
+        GTF    = WORKING_DIR + "genome/stringtie_transcriptome.gtf",
+        COUNTS = WORKING_DIR + "results/counts.txt"
     message:
         "Job done! Removing temporary directory"
 
@@ -303,7 +304,7 @@ rule create_counts_table:
         bam = WORKING_DIR + "mapped/{sample}.bam",
         gff = WORKING_DIR + "genome/stringtie_transcriptome.gtf"
     output:
-        WORKING_DIR + "results/results.csv"
+        WORKING_DIR + "results/counts.txt"
     conda:
         "envs/subread.yaml"
     shell:
