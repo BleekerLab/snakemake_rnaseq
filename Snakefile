@@ -273,6 +273,11 @@ rule create_stringtie_transcriptome:
     shell:
         "stringtie -G {input.Rtc} -o {output} {input.bam}"
 
+
+#############################################################
+#  Blast new transcriptome to get hypothetical gene functions
+#############################################################
+
 rule gtf_to_fasta:
     input:
         Ntx  = WORKING_DIR + "genome/stringtie_transcriptome.gtf",
@@ -299,7 +304,11 @@ rule blast_for_funtions:
     shell:
         "blastx -query {input.newTct} -db {input.refTct} -outfmt \"6 qseqid qlen slen evalue salltitles\" -out {output} -max_target_seqs 1 -num_threads {params.threads}"
 
-
+        
+#########################################
+# Get table containing the raw counts
+#########################################
+        
 rule create_counts_table:
     input:
         bams = expand(WORKING_DIR + "mapped/{sample}.bam", sample = SAMPLES),
@@ -311,6 +320,11 @@ rule create_counts_table:
     shell:
         "featureCounts -O -t transcript -g gene_id -F 'gtf' -a {input.gff} -o {output} {input.bams}"
 
+        
+############################################
+# normalize and get differential expressions 
+############################################
+        
 rule DESeq2_analysis:
     input:
         counts      = WORKING_DIR + "results/counts.txt",
@@ -325,6 +339,11 @@ rule DESeq2_analysis:
         "envs/deseq.yaml"
     shell:
         "Rscript scripts/DESeq2.R -c {input.counts} -s {input.samplefile} -o {output} -m {params.maxfraction}"
+
+        
+#########################################
+# combine differential expressions with hypothetical gene-functions
+#########################################
         
 rule results_function:
     input:
