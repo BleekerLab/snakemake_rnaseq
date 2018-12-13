@@ -300,7 +300,7 @@ rule blast_for_funtions:
 
 rule create_counts_table:
     input:
-        bam = WORKING_DIR + "mapped/merged_sorted.bam",
+        bam = WORKING_DIR + "mapped/{sample}.bam",
         gff = WORKING_DIR + "genome/ref_transcriptome.gff"
     output:
         WORKING_DIR + "genome/stringtie_transcriptome.gtf"
