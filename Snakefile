@@ -291,7 +291,7 @@ rule gtf_to_fasta:
     output:
         WORKING_DIR + "genome/stringtie_transcriptome.fasta"
     conda:
-        "envs/Tophat.yaml"
+        "envs/tophat.yaml"
     shell:
         "gtf_to_fasta {input.Ntx} {input.gen} {output}"
 
@@ -341,14 +341,13 @@ rule DESeq2_analysis:
     message:
         "normalizing read counts en creating differential expression table"
     params:
-        maxfraction = float(config["DESeq2"]["maxfraction"])
+        maxfraction = float(config["deseq2"]["maxfraction"])
     conda:
         "envs/deseq.yaml"
     shell:
         "Rscript scripts/DESeq2.R -c {input.counts} -s {input.samplefile} -o {output} -m {params.maxfraction}"
 
-        
-
+   
 # combine differential expressions with hypothetical gene-functions
 rule results_function:
     input:
@@ -359,3 +358,4 @@ rule results_function:
         final = WORKING_DIR + "results/final.txt"
     shell:
         "python scripts/DE_with_Function.py {input.fa} {input.blast} {input.deseq} {output.final}"
+
