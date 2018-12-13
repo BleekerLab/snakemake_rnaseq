@@ -12,7 +12,7 @@ refs:
     transcriptome_fasta:
         "ftp://ftp.solgenomics.net/genomes/Petunia_axillaris/annotation/Petunia_axillaris_v1.6.2_proteins.fasta"
     transcriptome_gtf:
-        "ftp://ftp.solgenomics.net/genomes/Petunia_axillaris/annotation/Petunia_axillaris_v1.6.2_CDS.gtf"
+        "ftp://ftp.solgenomics.net/genomes/Petunia_axillaris/annotation/Petunia_axillaris_v1.6.2_gene_models.gff"
 
 ### Software parameters
 trimmomatic:
