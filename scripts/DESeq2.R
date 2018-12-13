@@ -82,4 +82,4 @@ resdata <- merge(as.data.frame(resdata["genes"]), as.data.frame(resdata[,2:ncol(
 resdata$Row.names <- NULL
 
 # write the data to a file.
-write.table(resdata, file=opt$outdir,sep = "\t",quote=F,row.names=T)
+write.table(resdata, file=opt$outdir,sep = "\t",quote=F,row.names=F)
