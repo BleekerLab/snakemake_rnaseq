@@ -34,8 +34,6 @@ fwd        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.re
 rev        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.read_table(config["units"])["fq2"])))
 samplefile = config["units"]
 
-print(SAMPLES)
-
 def get_fastq(wildcards):
     return units.loc[(wildcards.sample), ["fq1","fq2"]].dropna()
 
@@ -66,7 +64,8 @@ rule all:
         FASTQC = expand(RESULT_DIR + "fastqc/{sample}.{step}.html", sample = SAMPLES,step=["original","trimmed"]),
         GTF    = WORKING_DIR + "genome/stringtie_transcriptome.gtf",
         COUNTS = WORKING_DIR + "results/counts.txt",
-        DESeq2 = WORKING_DIR + "results/result.csv"
+        DESeq2 = WORKING_DIR + "results/result.csv",
+        FINAL  = WORKING_DIR + "results/final.txt"
     message:
         "Job done! Removing temporary directory"
 
@@ -333,6 +332,6 @@ rule results_function:
         blast = WORKING_DIR + "results/stringtie_transcriptome_blast.txt",
         deseq = WORKING_DIR + "results/result.csv"
     output:
-        final = "results/final.txt"
+        final = WORKING_DIR + "results/final.txt"
     shell:
         "python scripts/DE_with_Function.py {input.fa} {input.blast} {input.deseq} {output.final}"
