@@ -244,7 +244,7 @@ rule hisat_mapping:
 ###########################################
 rule merge_bams:
     input:
-        get_bams
+        expand(WORKING_DIR + "mapped/{sample}.bam", sample = SAMPLES)
     output:
         merged = temp(WORKING_DIR + "merged.bam"),
         bam_sorted = WORKING_DIR + "merged_sorted.bam"
