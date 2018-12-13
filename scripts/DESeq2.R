@@ -62,6 +62,7 @@ for(i in levels(condition)){
       res <- results(dds, contrast=c("condition", i,  levels(condition)[j]))                      # i = first in pair, levels(condition)[j] is the second in pair.
       d <- paste(i, levels(condition)[j], sep="&")                                                # paste the two conditions in one character, to be used as the pair name
       resP <- as.data.frame(table(res$padj<0.05))                                                 # get number of DE values with P-value < 0.05
+      print(resP)
       if(resP[2,2]< opt$maxfraction*nrow(resdata)){                                               # only continue with the pair if it is less then the maximum fraction(set by user in commandline) differentially expressed 
         print(c(d,"Number of differentials is within accepted limit"))
         colnames(res) = paste(d,c(colnames(res)),sep = "-")                                       # paste the pair name to the column name
