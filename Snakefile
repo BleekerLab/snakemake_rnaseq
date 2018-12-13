@@ -256,7 +256,7 @@ rule create_stringtie_transcriptome:
     #params:
         # some parameters
     conda:
-        "envs/Stringtie.yaml"
+        "envs/stringtie.yaml"
     message:
         "creating transcriptome to stringtie_transcriptome.gtf."
     shell:
