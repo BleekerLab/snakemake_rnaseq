@@ -301,14 +301,14 @@ rule blast_for_funtions:
 
 rule create_counts_table:
     input:
-        bam = WORKING_DIR + "mapped/{sample}.bam",
+        bams  = WORKING_DIR + "mapped/{sample}.bam",
         gff = WORKING_DIR + "genome/stringtie_transcriptome.gtf"
     output:
         WORKING_DIR + "results/counts.txt"
     conda:
         "envs/subread.yaml"
     shell:
-        "featureCounts -O -t transcript -g gene_id -F 'gff' -a {input.Ntx} -o {output} {input.bams}"
+        "featureCounts -O -t transcript -g gene_id -F 'gtf' -a {input.gff} -o {output} {input.bams}"
 
 rule DESeq2_analysis:
     input:
