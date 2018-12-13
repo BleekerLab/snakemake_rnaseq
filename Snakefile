@@ -34,11 +34,6 @@ fwd        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.re
 rev        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.read_table(config["units"])["fq2"])))
 samplefile = config["units"]
 
-def get_fastq(wildcards):
-    return units.loc[(wildcards.sample), ["fq1","fq2"]].dropna()
-
-
-
 
 ###########################
 # Input functions for rules
@@ -286,30 +281,31 @@ rule get_ref_transcriptome_index:
 # get fasta's from gtf file
 rule gtf_to_fasta:
     input:
-        Ntx  = WORKING_DIR + "genome/stringtie_transcriptome.gtf",
+        gtf  = WORKING_DIR + "genome/stringtie_transcriptome.gtf",
         gen  = WORKING_DIR + "genome/genome.fasta"
     output:
         WORKING_DIR + "genome/stringtie_transcriptome.fasta"
     conda:
-        "envs/Tophat.yaml"
+        "envs/tophat.yaml"
     shell:
-        "gtf_to_fasta {input.Ntx} {input.gen} {output}"
+        "gtf_to_fasta {input.gtf} {input.gen} {output}"
 
 # Do the blast
 rule blast_for_funtions:
     input:
-        newTct = WORKING_DIR + "genome/stringtie_transcriptome.fasta",
-        refTct = WORKING_DIR + "genome/ref_transcriptome.fasta",
+        newTct     = WORKING_DIR + "genome/stringtie_transcriptome.fasta",
+        refTct     = WORKING_DIR + "genome/ref_transcriptome.fasta",
         indexFiles = [WORKING_DIR + "genome/ref_transcriptome.fasta." + i for i in ("psq", "phr", "pin")]
     output:
         WORKING_DIR + "results/stringtie_transcriptome_blast.txt"
     params:
-        evalue = "10",
-        threads= "5"
+        evalue   = "10",
+    threads:
+        5
     conda:
         "envs/blast.yaml"
     shell:
-        "blastx -query {input.newTct} -db {input.refTct} -outfmt \"6 qseqid qlen slen evalue salltitles\" -out {output} -max_target_seqs 1 -num_threads {params.threads}"
+        "blastx -query {input.newTct} -db {input.refTct} -outfmt \"6 qseqid qlen slen evalue salltitles\" -out {output} -max_target_seqs 1 -num_threads {threads}"
 
         
 #########################################
@@ -341,14 +337,13 @@ rule DESeq2_analysis:
     message:
         "normalizing read counts en creating differential expression table"
     params:
-        maxfraction = float(config["DESeq2"]["maxfraction"])
+        maxfraction = float(config["deseq2"]["maxfraction"])
     conda:
         "envs/deseq.yaml"
     shell:
         "Rscript scripts/DESeq2.R -c {input.counts} -s {input.samplefile} -o {output} -m {params.maxfraction}"
 
-        
-
+   
 # combine differential expressions with hypothetical gene-functions
 rule results_function:
     input:
@@ -359,3 +354,4 @@ rule results_function:
         final = WORKING_DIR + "results/final.txt"
     shell:
         "python scripts/DE_with_Function.py {input.fa} {input.blast} {input.deseq} {output.final}"
+
