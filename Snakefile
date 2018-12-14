@@ -17,7 +17,7 @@ RESULT_DIR = config["result_dir"]
 
 # fetch URL to transcriptome multi fasta from configfile
 genome_url = config["refs"]["genome"]
-transcriptome_fasta_url = config["refs"]["transcriptome_fasta"]
+transcriptome_fasta_url = config["refs"]["proteins_fasta"]
 transcriptome_gtf_url= config["refs"]["transcriptome_gtf"]
 
 ########################
