@@ -29,7 +29,7 @@ units = pd.read_table(config["units"], dtype=str).set_index(["sample"], drop=Fal
 
 # create lists containing the sample names and conditions
 SAMPLES = units.index.get_level_values('sample').unique().tolist()
-CONDITIONS = list(pd.read_table(config["units"])["condition"])
+#CONDITIONS = list(pd.read_table(config["units"])["condition"])
 fwd        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.read_table(config["units"])["fq1"])))
 rev        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.read_table(config["units"])["fq2"])))
 samplefile = config["units"]
