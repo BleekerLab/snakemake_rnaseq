@@ -128,10 +128,10 @@ rule trimmomatic:
     input:
         get_fastq
     output:
-        fw_reads        = WORKING_DIR + "trimmed/{sample}_fw.fq",
-        rev_reads       = WORKING_DIR + "trimmed/{sample}_rev.fq",
-        forwardUnpaired = WORKING_DIR + "trimmed/{sample}_forward_unpaired.fastq",
-        reverseUnpaired = WORKING_DIR + "trimmed/{sample}_reverse_unpaired.fastq"
+        fw_reads        = temp(WORKING_DIR + "trimmed/{sample}_fw.fq"),
+        rev_reads       = temp(WORKING_DIR + "trimmed/{sample}_rev.fq"),
+        forwardUnpaired = temp(WORKING_DIR + "trimmed/{sample}_forward_unpaired.fastq"),
+        reverseUnpaired = temp(WORKING_DIR + "trimmed/{sample}_reverse_unpaired.fastq")
     message:
         "trimming {wildcards.sample} reads"
     conda:
@@ -238,7 +238,7 @@ rule merge_bams:
         expand(WORKING_DIR + "mapped/{sample}.bam", sample = SAMPLES)
     output:
         merged = temp(WORKING_DIR + "merged.bam"),
-        bam_sorted = WORKING_DIR + "merged_sorted.bam"
+        bam_sorted = temp(WORKING_DIR + "merged_sorted.bam")
     conda:
         "envs/samtools.yaml"
     shell:
