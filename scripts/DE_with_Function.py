@@ -30,7 +30,6 @@ for l in fu:
         names[combis[l[0]]] += l[2:]
         lijst.append(combis[l[0]])
 fu.close()
-print(combis[l[0]])
 inFile  = open(args[3], "r")
 uitFile = open(args[4], "w")
 
