@@ -301,13 +301,22 @@ rule blast_for_funtions:
     output:
         WORKING_DIR + "results/stringtie_transcriptome_blast.txt"
     params:
-        evalue   = "10",
+        evalue     = str(config['blast']['evalue']),     # 1e-10
+        outFmt     = str(config['blast']['outFmt']),     # 6 qseqid qlen slen evalue salltitles
+        maxTargets = str(config['blast']['maxTargets']) # 1bin/bash: indent: command not found
     threads:
         5
     conda:
         "envs/blast.yaml"
     shell:
-        "blastx -query {input.newTct} -db {input.refTct} -outfmt \"6 qseqid qlen slen evalue salltitles\" -out {output} -max_target_seqs 1 -num_threads {threads}"
+        "blastx "
+        "-query {input.newTct} "
+        "-db {input.refTct} "
+        "-outfmt \"{params.outFmt}\" "
+        "-evalue {params.evalue} "
+        "-out {output} "
+        "-num_threads {threads} "
+        "-max_target_seqs {params.maxTargets}"
 
         
 #########################################
