@@ -17,11 +17,23 @@ This pipeline analyses the raw RNA-seq data and produce a file containing normal
 - `data/`: a folder containing samples.txt (sample descriptions) and subsetted paired-end fastq files used to test locally the pipeline. Generated using [Seqtk](https://github.com/lh3/seqtk):
 `seqtk sample -s100 {inputfile(can be gzipped)} 250000 > {output(always gunzipped)}`
 This folder should contain the `fastq` of the paired-end RNA-seq data, you want to run.
-- `envs/`: a folder containing the environments needed for the conda package manager. If run with the `--use-conda` command, Snakemake will install the necessary softwares and packages using the conda environment files. 
+- `envs/`: a folder containing the environments needed for the conda package manager. If run with the `--use-conda` command, Snakemake will install the necessary softwares and packages using the conda environment files.
 - `samples.tsv`:  a file containing information about the names, the paths and the conditions of the samples used as input for the pipeline. **This file has to be adapted to your sample names before running the pipeline**.
 
 
 # Usage
+
+## Download or clone the Github repository
+You will need a local copy of the `Snakemake_hisat-DESeq` on your machine. You can either:
+- use git in the shell: `git clone git@github.com:KoesGroup/Snakemake_hisat-DESeq.git`
+- click on "Clone or download" and select `download`
+
+## Installing and activating a virtual environment
+First, you need to create an environment where `Snakemake` and the python `pandas`package will be installed. To do that, we will use the conda package manager.   
+1. Create a virtual environment named `rnaseq` using the `global_env.yaml` file with the following command: `conda env create --name rnaseq --file envs/global_env.yaml`
+    Then, activate this virtual environment with source activate chipseq
+
+The Snakefile will then take care of installing and loading the packages and softwares required by each step of the pipeline.
 
 ## Configuration file
 Make sure you have changed the parameters in the `config.yaml` file that specifies where to find the sample data file, the genomic and transcriptomic reference fasta files to use and the parameters for certains rules etc.  
