@@ -17,7 +17,7 @@ opt = parse_args(opt_parser);
 ######## Import and wrangle counts produced by FeatureCounts #######
 countdata <- read.table(opt$counts, header=TRUE, skip=1, row.names=1,stringsAsFactors = F, check.names = F)
 countdata <- countdata[ ,6:ncol(countdata)] # Remove first five columns (chr, start, end, strand, length)
-head(countdata)
+
 # Remove .bam or .sam from filenames
 colnames(countdata) <- gsub("\\.[sb]am$", "", colnames(countdata))
 
