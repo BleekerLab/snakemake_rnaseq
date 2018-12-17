@@ -259,6 +259,8 @@ rule create_stringtie_transcriptome:
         "envs/stringtie.yaml"
     message:
         "creating transcriptome to stringtie_transcriptome.gtf."
+    threads:
+        10
     shell:
         "stringtie -G {input.Rtc} -o {output} {input.bam}"
 
