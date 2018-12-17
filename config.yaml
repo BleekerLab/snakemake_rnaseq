@@ -7,11 +7,11 @@ result_dir: "results/"
 
 ### Genome and annotations
 refs:
-    genome:
+  genome:
         ftp://ftp.solgenomics.net/genomes/Petunia_axillaris/assembly/Petunia_axillaris_v1.6.2_genome.fasta
-    proteins_fasta:
+  proteins_fasta:
         "ftp://ftp.solgenomics.net/genomes/Petunia_axillaris/annotation/Petunia_axillaris_v1.6.2_proteins.fasta"
-    transcriptome_gtf:
+  transcriptome_gtf:
         "ftp://ftp.solgenomics.net/genomes/Petunia_axillaris/annotation/Petunia_axillaris_v1.6.2_gene_models.gff"
 
 ### Software parameters
@@ -27,5 +27,10 @@ trimmomatic:
   minReadLength: '40'
   phred: "-phred33" # phred: for illumina >1.8 the quality score are encoded by phred33
 
+blast:
+  evalue     : "1e-10"
+  outFmt     : "6 qseqid evalue length mismatch salltitles"   # 6 for tab separeted file.
+  maxTargets : "1"
+
 deseq2:
-  maxfraction : '0.1'
+  maxfraction : '0.7'
