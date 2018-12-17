@@ -58,9 +58,9 @@ rule all:
     input:
         FASTQC = expand(RESULT_DIR + "fastqc/{sample}.{step}.html", sample = SAMPLES,step=["original","trimmed"]),
         GTF    = WORKING_DIR + "genome/stringtie_transcriptome.gtf",
-        COUNTS = WORKING_DIR + "results/counts.txt",
+        COUNTS = RESULT_DIR + "counts.txt",
         DESeq2 = WORKING_DIR + "results/result.csv",
-        FINAL  = WORKING_DIR + "results/final.txt"
+        FINAL  = RESULT_DIR + "final.txt"
     message:
         "Job done! Removing temporary directory"
 
@@ -319,7 +319,7 @@ rule create_counts_table:
         bams = expand(WORKING_DIR + "mapped/{sample}.bam", sample = SAMPLES),
         gff  = WORKING_DIR + "genome/stringtie_transcriptome.gtf"
     output:
-        WORKING_DIR + "results/counts.txt"
+        RESULT_DIR + "counts.txt"
     conda:
         "envs/subread.yaml"
     shell:
@@ -332,7 +332,7 @@ rule create_counts_table:
         
 rule DESeq2_analysis:
     input:
-        counts      = WORKING_DIR + "results/counts.txt",
+        counts      = RESULT_DIR + "counts.txt",
         samplefile  = samplefile
     output:
         WORKING_DIR + "results/result.csv"
@@ -353,7 +353,7 @@ rule results_function:
         blast = WORKING_DIR + "results/stringtie_transcriptome_blast.txt",
         deseq = WORKING_DIR + "results/result.csv"
     output:
-        final = WORKING_DIR + "results/final.txt"
+        final = RESULT_DIR + "final.txt"
     shell:
         "python scripts/DE_with_Function.py {input.fa} {input.blast} {input.deseq} {output.final}"
 
