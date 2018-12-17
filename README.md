@@ -8,28 +8,30 @@ A snakemake pipeline for the analysis of RNA-seq data that makes use of [hisat2]
 To align, count, normalize couts and compute gene differential expressions between conditions using paired-end Illumina RNA-seq data.
 
 # Description
-This pipeline analyses the raw RNA-seq data and produce a file containing normalized counts, differential expression and functions of transcripts. The raw fastq files will be trimmed for adaptors and quality checked with trimmomatic. Next, the necessary genome fasta sequence and transcriptome references will be downloaded and the trimmed reads will be mapped against using hisat2. with stringtie and a refference annotation a new annotation will be created. This new annotation will be used to obtain the raw counts and do a local blast to a transcriptome fasta containing predicted functions. The counts are normalized and differential expressions are calculated using DESeq2. This data is combined with the predicted functions to get the final results table.
+This pipeline analyses the raw RNA-seq data and produce a file containing normalized counts, differential expression and functions of transcripts. The raw fastq files will be trimmed for adaptors and quality checked with trimmomatic. Next, the necessary genome fasta sequence and transcriptome references will be downloaded and the trimmed reads will be mapped against it  using hisat2. With stringtie and a reference annotation a new annotation will be created. This new annotation will be used to obtain the raw counts and do a local blast to a transcriptome fasta containing predicted functions. The counts are normalized and differential expressions are calculated using DESeq2. This data is combined with the predicted functions to get the final results table.
 
 
 # Content
 - `Snakefile`: a master file that contains the desired outputs and the rules to generate them from the input files.
-- `config/`: a folder containing the configuration files making the Snakefile adaptable to any input files, genome and parameter for the rules.
+- `config.yaml`: the configuration files making the Snakefile adaptable to any input files, genome and parameter for the rules.
 - `data/`: a folder containing samples.txt (sample descriptions) and subsetted paired-end fastq files used to test locally the pipeline. Generated using [Seqtk](https://github.com/lh3/seqtk):
 `seqtk sample -s100 {inputfile(can be gzipped)} 250000 > {output(always gunzipped)}`
+This folder should contain the `fastq` of the paired-end RNA-seq data, you want to run.
 - `envs/`: a folder containing the environments needed for the conda package manager. If run with the `--use-conda` command, Snakemake will install the necessary softwares and packages using the conda environment files. 
+- `samples.tsv`:  a file containing information about the names, the paths and the conditions of the samples used as input for the pipeline. **This file has to be adapted to your sample names before running the pipeline**.
 
 
 # Usage
 
 ## Configuration file
-Make sure you have changed the parameters in the `configs/config.yaml` file that specifies where to find the sample data file, the genomic and transcriptomic reference fasta files to use and the parameters for certains rules etc.  
+Make sure you have changed the parameters in the `config.yaml` file that specifies where to find the sample data file, the genomic and transcriptomic reference fasta files to use and the parameters for certains rules etc.  
 This file is used so the `Snakefile` does not need to be changed when locations or parameters need to be changed.
 
 ## Snakemake execution
 The Snakemake pipeline/workflow management system reads a master file (often called `Snakefile`) to list the steps to be executed and defining their order. It has many rich features. Read more [here](https://snakemake.readthedocs.io/en/stable/).
 
 ## Dry run
-Use the command `snakemake --use-conda -np` to perform a dry run that prints out the rules and commands.
+From the folder containing the `Snakefile`, use the command `snakemake --use-conda -np` to perform a dry run that prints out the rules and commands.
 
 ## Real run
 Simply type `Snakemake --use-conda` and provide the number of cores with `--cores 10` for ten cores for instance.  
