@@ -1,0 +1,4 @@
+channels:
+  - bioconda
+dependencies:
+  - hisat2=2.1.0
