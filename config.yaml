@@ -36,4 +36,4 @@ blast:
   maxTargets : "1"
 
 deseq2:
-  maxfraction : '0.7'
+  maxfraction : '0.3'
