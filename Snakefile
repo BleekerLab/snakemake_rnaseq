@@ -344,7 +344,8 @@ rule DESeq2_analysis:
         counts      = RESULT_DIR + "counts.txt",
         samplefile  = samplefile
     output:
-        WORKING_DIR + "results/result.csv"
+        result      = RESULT_DIR + "results/result.csv"
+        helper      = RESULT_DIR + "result/helperFile.csv"
     message:
         "normalizing read counts en creating differential expression table"
     params:
@@ -352,7 +353,7 @@ rule DESeq2_analysis:
     conda:
         "envs/deseq.yaml"
     shell:
-        "Rscript scripts/DESeq2.R -c {input.counts} -s {input.samplefile} -o {output} -m {params.maxfraction}"
+        "Rscript scripts/DESeq2.R -c {input.counts} -s {input.samplefile} -o {output.result} -m {params.maxfraction} -f {output.helper}"
 
    
 # combine differential expressions with hypothetical gene-functions
@@ -365,4 +366,32 @@ rule results_function:
         final = RESULT_DIR + "final.txt"
     shell:
         "python scripts/DE_with_Function.py {input.fa} {input.blast} {input.deseq} {output.final}"
+        
+#####################################################
+#   get clusters, plots and heatmaps
+#####################################################
+
+
+rule filter_for_plots:
+    input:
+        result      = RESULT_DIR + "results/result.csv"
+        helper      = RESULT_DIR + "result/helperFile.csv"
+    output:
+        RESULT_DIR + "result/plotSelection.txt
+    params:
+        minimum_reads      =  int(config["fliter_for_plots"]["minimum_reads"])
+        minimum_foldchange =  float(config["fliter_for_plots"]["minimum_foldchange"])
+        maximum_pvalue     =  float(config["fliter_for_plots"]["maximum_pvalue"])
+        average_samples    =  str(config["fliter_for_plots"]["average_samples"])
+     conda:
+        "envs/filter_for_plots.yaml"
+     shell
+
+rule make_plots:
+    input:
+        RESULT_DIR + "result/plotSelection.txt"
+    output:
+        RESULT_DIR + "plots.pdf"
+        
+        
 
