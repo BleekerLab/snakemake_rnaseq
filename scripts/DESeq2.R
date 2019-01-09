@@ -42,6 +42,13 @@ if (length(colsForConditions) == 1){
   print("too many conditions to compare, skipping")
 }
 
+# create helper file for downstream use in the pipeline.
+helperFile <- as.data.frame(condition)
+rownames(helperFile) <- samplefile$sample
+colnames(helperFile) <- NULL
+print(helperFile)
+write.csv(helperFile, file = "helperfile.csv", quote = F, col.names = F, row.names = T)
+
 # Analysis with DESeq2 ----------------------------------------------------
 # Create a coldata frame and instantiate the DESeqDataSet. See ?DESeqDataSetFromMatrix
 coldata <- data.frame(row.names=colnames(countdata), condition)
@@ -53,6 +60,22 @@ dds <- DESeq(dds)
 # create dataframe containing normalized counts, to which the differential expression values will be added
 resdata <- as.data.frame(counts(dds, normalized=TRUE))
 
+## function for Volcano plot with "significant" genes labeled
+volcanoplot <- function (res, lfcthresh=2, sigthresh=0.05, main="Volcano Plot", legendpos="bottomright", labelsig=TRUE, textcx=1, ...) {
+  with(res, plot(log2FoldChange, -log10(padj), pch=20, main=main, ...))
+  with(subset(res, padj<sigthresh ), points(log2FoldChange, -log10(padj), pch=20, col="red", ...))
+  with(subset(res, abs(log2FoldChange)>lfcthresh), points(log2FoldChange, -log10(padj), pch=20, col="orange", ...))
+  with(subset(res, padj<sigthresh & abs(log2FoldChange)>lfcthresh), points(log2FoldChange, -log10(padj), pch=20, col="green", ...))
+  if (labelsig) {
+    require(calibrate)
+    with(subset(res, padj<sigthresh & abs(log2FoldChange)>lfcthresh), textxy(log2FoldChange, -log10(padj), labs=colnames(res), cex=textcx, ...))
+  }
+  legend(legendpos, xjust=1, yjust=1, legend=c(paste("FDR<",sigthresh,sep=""), paste("|LogFC|>",lfcthresh,sep=""), "both"), pch=20, col=c("red","orange","green"))
+}
+
+# open file that will be containing a vulcano plot for each of the combinations of conditions
+pdf(file="vulcanoplots.pdf")
+
 # iterate through the list of conditions to create differential expression (DE) values for all possible pairs
 x <- 1
 for(i in levels(condition)){
@@ -63,6 +86,7 @@ for(i in levels(condition)){
       d <- paste(i, levels(condition)[j], sep="&")                                                # paste the two conditions in one character, to be used as the pair name
       resP <- as.data.frame(table(res$padj<0.05))                                                 # get number of DE values with P-value < 0.05
       if(resP[1,2]< opt$maxfraction*nrow(resdata)){                                               # only continue with the pair if it is less then the maximum fraction(set by user in commandline) differentially expressed 
+        volcanoplot(res, lfcthresh=1, sigthresh=0.05, textcx=.8, xlim=c(-10, 10), main=d)
         print(c(d,"Number of differentials is within accepted limit"))
         colnames(res) = paste(d,c(colnames(res)),sep = "-")                                       # paste the pair name to the column name
         resdata <- merge(as.data.frame(resdata), as.data.frame(res), by="row.names", sort=FALSE)  # merge the DE values to the matrix
@@ -75,7 +99,7 @@ for(i in levels(condition)){
     }
   }
 }
-
+dev.off()
 # create first column containing the genenames.
 resdata$genes <- rownames(resdata)
 resdata <- merge(as.data.frame(resdata["genes"]), as.data.frame(resdata[,2:ncol(resdata)-1]), by="row.names", sort=FALSE)
