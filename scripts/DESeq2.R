@@ -7,6 +7,7 @@ option_list = list(
   make_option(c("-c", "--counts"), type="character", default="results/counts.txt", help="counts tabulated file from Feature Counts", metavar="character"),
   make_option(c("-s", "--samplefile"), type="character", default="data/samples2.tsv", help="sample files used to get conditions for DESEq2 model fit", metavar="character"),
   make_option(c("-o", "--outdir"), type="character", default="results/deseqNew.csv", help="where to place differential expression files", metavar="character"),
+  make_option(c("-f", "--helperfile"), type="character", default="results/helperfile.csv", help="helper file needed for the creation of the clustering and the heatmaps", metavar="character"),
   make_option(c("-m", "--maxfraction"), type="double", default=1.0, help="maximum fraction of the total number of genes to be allowed to be differential between two conditions to be included (number between 0 and 1)", metavar="double")
 ) 
 
@@ -47,7 +48,7 @@ helperFile <- as.data.frame(condition)
 rownames(helperFile) <- samplefile$sample
 colnames(helperFile) <- NULL
 print(helperFile)
-write.csv(helperFile, file = "helperfile.csv", quote = F, col.names = F, row.names = T)
+write.csv(helperFile, file = opt$helperfile, quote = F, col.names = F, row.names = T)
 
 # Analysis with DESeq2 ----------------------------------------------------
 # Create a coldata frame and instantiate the DESeqDataSet. See ?DESeqDataSetFromMatrix
