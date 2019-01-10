@@ -377,7 +377,7 @@ rule filter_for_plots:
         result      = RESULT_DIR + "results/result.csv"
         helper      = RESULT_DIR + "result/helperFile.csv"
     output:
-        RESULT_DIR + "result/plotSelection.txt
+        RESULT_DIR + "result/plotSelection.txt"
     params:
         minimum_reads      =  int(config["fliter_for_plots"]["minimum_reads"])
         minimum_foldchange =  float(config["fliter_for_plots"]["minimum_foldchange"])
@@ -385,7 +385,10 @@ rule filter_for_plots:
         average_samples    =  str(config["fliter_for_plots"]["average_samples"])
      conda:
         "envs/filter_for_plots.yaml"
-     shell
+     shell:
+        "python filterForPlots.py "
+        "-r {params.minimum_reads} "
+        "
 
 rule make_plots:
     input:
