@@ -387,6 +387,9 @@ rule filter_for_plots:
         "envs/filter_for_plots.yaml"
      shell:
         "python filterForPlots.py "
+        "-i {input.result} "
+        "-f {input.helper} "
+        "-o {output} "
         "-r {params.minimum_reads} "
         "
 
