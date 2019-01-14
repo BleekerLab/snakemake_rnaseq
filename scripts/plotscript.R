@@ -1,3 +1,69 @@
+#####################################################################
+#############       get command line options        #################
+#####################################################################
+
+
+library(optparse)
+
+option_list = list(
+  make_option(c("-i", "--input_file"), type="character", default="results/counts.txt", help="normalized and filtered counts tabulated file from filter_for_plots.py", metavar="character"),
+  make_option(c("-m", "--method_of_clustering"), type="character", default="hierarchical", help="method of clustering chose between: hierarchical, 
+                kmean or fuzzy_kmean
+                default is hierarchical", metavar="character"),
+  make_option(c("-n", "--opt_clust_number"), type="character", default="dynamic", help="determination of optimal number of clusters, 
+                If --method_of_clustering=hierarchical the options are: fixed, height or dynamic.
+                If--method_of_clustering=kmean or --method_of_clustering=fuzzy_kmean the options
+                are: fixed, average_silhouette_width, calinsky_criterion, 
+                gap_statistic or affinity_propogation.
+                default is dynamic.", metavar="character"),
+  make_option(c("-k", "--number_of_clusters"), type="integer", default=5, help="number of clusters to be used. choose an integer of two or more. 
+                To be used if --det_hclust_number=fixed or --det_kclust_number=fixed.
+                default is 5", metavar="integer"),
+  make_option(c("-H", "--height_in_dendrogram"), type="double", default=1.5, help="height in dendrogram to use for determination of cluster number.
+               default is 1.5", metavar="double"),
+  make_option(c("-q", "--membership_min"), type="double", default=0.2, help="minimal membership value of fuzzy kmean cluster to be included in 
+                the cluster. should be a value between 0.0 and 1.0. Only to 
+                be used in combination with -m = fuzzy_kmean. Best to first run with a low value,
+	        and adjust based on results if needed.
+                default is o.2", metavar="double"),
+  make_option(c("-c", "--colour_of_heatmaps"), type="character", default=c("white","green","green4","violet","purple"), help="colors of the heatmaps. needs to be a list of two or more colors. 
+                To see a list of all 657 colour names in R: colors()
+                default is the colourblind friendly: 
+                c(\"white\",\"green\",\"green4\",\"violet\",\"purple\")", metavar="character"),
+  make_option(c("-o", "--output_file"), type="character", default="results/plots.pdf", help="name of multipage pdf file where to output all the plots.", metavar="character")
+  )
+# parse the command-line arguments and pass them to a list called 'opt'
+opt_parser = OptionParser(option_list=option_list , add_help_option = TRUE, description = "\nThis script produces multiple plots and clusters from a RNAseq
+output from the filter_for_plots.py. 
+plots include dendrograms of the samples and the genes, a heatmap, an elbow plot,
+a heatmap with clusters specicied by colorbar, and finally plots and heatmaps of the
+different clusters.
+Because the 'correct' method for clustering RNAseq data is a matter of perspective; 
+it is the one that allows the researcher to make the most out of her data. Gene expression
+data is also full of noise which can make clustering tricky when using algorithms optimised
+for chunkier data. With that in mind it's good to try several methods and compare them.
+So for that multiple ways of clusting can be choosen also the number of clusters can be manually
+choosen or calculated by a number of given methods. When making use of the snakemake pipeline,
+it is essential to remove or rename the output file (plots.pdf), change the arguments you want to 
+change in the config.yaml, and rerun the pipeline with 'snakemake --use-conda' (to be sure only
+the last script reruns, start of with 'snakemake -np').", epilogue = "Pease feel free to mail me, bliek@uva.nl, if you would like more info or have suggestions for optimization.\n\n");
+opt = parse_args(opt_parser);
+
+i <- opt$input_file
+m <- opt$method_of_clustering
+n <- opt$opt_clust_number
+k <- opt$number_of_clusters
+h <- opt$height_in_dendrogram
+o <- opt$output_file
+c <- opt$colour_of_heatmaps
+q <- opt$membership_min
+
+
+######################################################################
+##############          import needed packages         ###############
+######################################################################
+
+
 library(gplots)
 library(dendextend)
 library(dynamicTreeCut)
@@ -10,58 +76,9 @@ library(reshape2)
 library(RColorBrewer)
 library(dplyr)
 library(colorRamps)
-library(optparse)
 library(e1071)
 library(tidyr)
 library(ggplot2)
-
-#####################################################################
-#############       get command line options        #################
-#####################################################################
-
-option_list = list(
-  make_option(c("-i", "--input_file"), type="character", default="results/counts.txt", help="counts tabulated file from Feature Counts", metavar="character"),
-  make_option(c("-m", "--method_of_clustering"), type="character", default="hierarchical", help="method of clustering chose between: hierarchical, 
-              kmean or fuzzy_kmean
-              default is hierarchical", metavar="character"),
-  make_option(c("-n", "--opt_clust_number"), type="character", default="dynamic", help="determination of optimal number of clusters, 
-              If --method_of_clustering=hierarchical the options are: fixed, height or dynamic.
-              If--method_of_clustering=kmean or --method_of_clustering=fuzzy_kmean the options
-              are: fixed, average_silhouette_width, calinsky_criterion, 
-              gap_statistic or affinity_propogation.
-              default is dynamic.", metavar="character"),
-  make_option(c("-k", "--number_of_clusters"), type="integer", default=5, help="number of clusters to be used. choose an integer of two or more. 
-              To be used if --det_hclust_number=fixed or --det_kclust_number=fixed.
-              default is 5", metavar="integer"),
-  make_option(c("-H", "--height_in_dendrogram"), type="double", default=1.5, help="height in dendrogram to use for determination of cluster number.
-              default is 1.5", metavar="double"),
-  make_option(c("-q", "--membership_min"), type="double", default=0.2, help="minimal membership value of fuzzy kmean cluster to be included in 
-              the cluster. should be a value between 0.0 and 1.0. Only to 
-              be used in combination with -m = fuzzy_kmean. Best to first run with a low value, and adjust based on results if needed.
-              default is o.2", metavar="double"),
-  make_option(c("-c", "--colour_of_heatmaps"), type="character", default=c("white","green","green4","violet","purple"), help="colors of the heatmaps. needs to be a list of two or more colors. 
-              To see a list of all 657 colour names in R: colors()
-              default is the colourblind friendly: 
-              c(\"white\",\"green\",\"green4\",\"violet\",\"purple\")", metavar="character"),
-  make_option(c("-o", "--output_file"), type="character", default="results/plots.pdf", help="name of multipage pdf file where to output all the plots.", metavar="character")
-  )
-# parse the command-line arguments and pass them to a list called 'opt'
-opt_parser = OptionParser(option_list=option_list , add_help_option = TRUE, description = "The 'correct' method for clustering RNAseq data is a matter of perspective; 
-                          it is the one that allows the researcher to make the most out of her data. 
-                          Gene expression data is also full of noise which can make clustering tricky 
-                          when using algorithms optimised for chunkier data. 
-                          With that in mind it's good to try several methods and compare them.", epilogue = "Thanks for using this script");
-opt = parse_args(opt_parser);
-
-i <- opt$input_file
-m <- opt$method_of_clustering
-n <- opt$opt_clust_number
-k <- opt$number_of_clusters
-h <- opt$height_in_dendrogram
-o <- opt$output_file
-c <- opt$colour_of_heatmaps
-q <- opt$membership_min
-
 
 ######################################################################
 ###############              read the data           #################
