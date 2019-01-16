@@ -10,6 +10,10 @@ To align, count, normalize couts and compute gene differential expressions betwe
 # Description
 This pipeline analyses the raw RNA-seq data and produce a file containing normalized counts, differential expression and functions of transcripts. The raw fastq files will be trimmed for adaptors and quality checked with trimmomatic. Next, the necessary genome fasta sequence and transcriptome references will be downloaded and the trimmed reads will be mapped against it  using hisat2. With stringtie and a reference annotation a new annotation will be created. This new annotation will be used to obtain the raw counts and do a local blast to a transcriptome fasta containing predicted functions. The counts are normalized and differential expressions are calculated using DESeq2. This data is combined with the predicted functions to get the final results table.
 
+# Prerequisites: what you should be able to do before using this Snakemake pipeline
+- Some command of the Unix Shell to connect to a remote server where you will execute the pipeline (e.g. SURF Lisa Cluster). You can find a good tutorial from the Software Carpentry Foundation [here](https://swcarpentry.github.io/shell-novice/) and another one from Berlin Bioinformatics [here](http://bioinformatics.mdc-berlin.de/intro2UnixandSGE/unix_for_beginners/README.html).
+- Some command of the Unix Shell to transfer datasets to and from a remote server (to transfer sequencing files and retrieve the results/). The Berlin Bioinformatics Unix begginer guide available [here] should be sufficient for that (check the `wget` and `scp` commands).
+- An understanding of the steps of a canonical RNA-Seq analysis (trimming, alignment, etc.). You can find some info [here](https://bitesizebio.com/13542/what-everyone-should-know-about-rna-seq/). 
 
 # Content
 - `Snakefile`: a master file that contains the desired outputs and the rules to generate them from the input files.
