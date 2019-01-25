@@ -26,11 +26,17 @@ option_list = list(
                 be used in combination with -m = fuzzy_kmean. Best to first run with a low value,
 	        and adjust based on results if needed.
                 default is o.2", metavar="double"),
+  make_option(c("-r", "--correlation_min"), type="double", default=0.5, help="minimal correlation value to a kmean cluster to be included in 
+                the cluster, if too low it will be excluded from all clusters!. should be a value
+                between 0.0 and 1.0. Only to be used in combination with -m = kmean or -m = pam. 
+                Best to first run with a low value, and adjust based on results if needed.
+                default is 0.5", metavar="double")
   make_option(c("-c", "--colour_of_heatmaps"), type="character", default=c("white","green","green4","violet","purple"), help="colors of the heatmaps. needs to be a list of two or more colors. 
                 To see a list of all 657 colour names in R: colors()
                 default is the colourblind friendly: 
                 c(\"white\",\"green\",\"green4\",\"violet\",\"purple\")", metavar="character"),
-  make_option(c("-o", "--output_file"), type="character", default="results/plots.pdf", help="name of multipage pdf file where to output all the plots.", metavar="character")
+  make_option(c("-p", "--plots_output_file"), type="character", default="results/plots.pdf", help="name of multipage pdf file where to output all the plots.", metavar="character")
+  make_option(c("-o", "--clusters_output_file"), type="character", default="results/plots.pdf", help="name of multipage pdf file where to output all the plots.", metavar="character")
   )
 # parse the command-line arguments and pass them to a list called 'opt'
 opt_parser = OptionParser(option_list=option_list , add_help_option = TRUE, description = "\nThis script produces multiple plots and clusters from a RNAseq
@@ -54,10 +60,11 @@ m <- opt$method_of_clustering
 n <- opt$opt_clust_number
 k <- opt$number_of_clusters
 h <- opt$height_in_dendrogram
-o <- opt$output_file
 c <- opt$colour_of_heatmaps
 q <- opt$membership_min
-
+r <- opt$correlation_min
+p <- opt$plots_output_file
+o <- opt$clusters_output_file
 
 ######################################################################
 ##############          import needed packages         ###############
@@ -92,7 +99,7 @@ scaledata <- t(scale(t(z))) # Centers and scales data.
 scaledata <- scaledata[complete.cases(scaledata),]
 
 # open pdf for the plots
-pdf(file=o)
+pdf(file=p)
 
 #mean/variance calculations and plot
 z_var <- apply(z, 1, var)
@@ -104,13 +111,14 @@ plot(log2(z_mean), log2(z_var), pch='.')
 ############    hierarchical dendrogram      #################
 ##############################################################
 
-
+# dendrogram of the samples
 hc <- hclust(as.dist(1-cor(scaledata, method="spearman")), method="complete") # Clusters columns by Spearman correlation.
 TreeC = as.dendrogram(hc, method="average")
 plot(TreeC,
      main = "Sample Clustering",
      ylab = "Height")
 
+# dendrogram of the genes
 hr <- hclust(as.dist(1-cor(t(scaledata), method="pearson")), method="complete") # Cluster rows by Pearson correlation.
 TreeR = as.dendrogram(hr, method="average")
 plot(TreeR,
@@ -157,7 +165,7 @@ plot(1:20, wss, type="b", xlab="Number of Clusters",
 
 
 
-if(m == "kmean" || m == "fuzzy_kmean"){
+if(m == "kmean" || m == "fuzzy_kmean" || m == "pam"){
   if(n == "average_silhouette_width"){
     # method 1: average silhouette width
     sil <- rep(0, 20)
@@ -251,6 +259,10 @@ if(m == "kmean" || m == "fuzzy_kmean"){
     # filter out genes don't really belong to any of the clusters
     selection <- fcm_plotting_df %>% filter(membership > q)
   }
+  else if(m == "pam"){
+    pam.Pclusts <- pam(scaledata, k=k)
+    clusts <- pam.Pclusts$'clustering'
+  }
 }else if(opt$method_of_clustering == "hierarchical"){
   if(n == "dynamic"){
     clusts <- cutreeDynamic(hr, distM = as.matrix(as.dist(1-cor(t(scaledata)))), method = "hybrid")
@@ -258,14 +270,17 @@ if(m == "kmean" || m == "fuzzy_kmean"){
     clust <- as.data.frame(clusts)
     colnames(clust) <- "cluster"
     k = length(unique(clusts))
+    print(paste0("Dataset is clustered in ",k, " clusters "))
   }
   else if(n == "fixed"){
     clusts = cutree(hr, k=k)
     k = length(unique(clusts))
+    print(paste0("Dataset is clustered in ",k, " clusters "))
   }
   else if(n == "height"){
     clusts = cutree(hr, h=h)
     k = length(unique(clusts))
+    print(paste0("Dataset is clustered in ",k, " clusters "))
   }
   else{
     print("your choosen method of determining the optimal number of clusters is unclear.\
@@ -284,6 +299,8 @@ if(m == "kmean" || m == "fuzzy_kmean"){
 mycolhc <- rainbow(length(unique(clusts)), start=0.1, end=0.9)
 mycolhc <- mycolhc[as.vector(clusts)]
 
+hr <- hclust(as.dist(1-cor(t(scaledata), method="pearson")), method="complete")
+	  
 heatmap.2(z,
           Rowv=as.dendrogram(hr), 
           Colv=NA,
@@ -299,11 +316,11 @@ heatmap.2(z,
           key = FALSE)
 
 
-###################################################################
-###  calculate the cluster 'cores' aka centroids and plot them  ###
-###################################################################
+###############################################################################
+########   calculate the cluster 'cores' aka centroids and plot them   ########
+###############################################################################
 
-
+# get the cluster centroids (the average profile of expression for each of the clusters)
 clust.centroid = function(i, dat, clusters) {
   ind = (clusters == i)
   colMeans(dat[ind,])
@@ -312,11 +329,16 @@ clusUniq <- unique(clusts)
 kClustcentroids <- sapply(levels(factor(clusts)), clust.centroid, scaledata, clusts)
 head(kClustcentroids)
 
-#colnames(kClustcentroids) <-c(clusUniq)
-
 Kmolten <- melt(kClustcentroids)
 colnames(Kmolten) <- c('sample','cluster','value')
 
+# In case of use of pam, the cluster centroids wil be the medoids (the expression profiles of the genes that fit the clusters best)
+if (m == "pam"){
+  pClustcentroids <- t(pam.Pclusts$"medoids")
+  KmoltenP <- melt(pClustcentroids)
+  colnames(KmoltenP) <- c('sample','cluster','value')
+} 
+	  
 p1 <- ggplot(Kmolten, aes(x=sample,y=value, group=cluster, colour=as.factor(cluster))) + 
   geom_point() + 
   geom_line() +
@@ -325,11 +347,20 @@ p1 <- ggplot(Kmolten, aes(x=sample,y=value, group=cluster, colour=as.factor(clus
   labs(title= "Cluster Expression of the samples",color = "Cluster")
 p1
 
+# in case of pam, change names of the clusters to numbers in stead of the medoids gene names
+if (m == "pam"){
+  colnames(pClustcentroids) <- clusUniq
+  Kmolten <- melt(pClustcentroids)
+  colnames(Kmolten) <- c('sample','cluster','value')
+}
 ###########################################################################
 #############      heatmaps and plots of the clusters      ################
 ###########################################################################
 
+# open list to collect the correlation values in case of kmean, fuzzy_kmean and pam
+cors <- c()
 
+# loop though the clusters and create expression profile plots and heatmap for each of them
 if(m == "fuzzy_kmean"){
   for(i in 1:k){
     print(i)
@@ -374,7 +405,7 @@ if(m == "fuzzy_kmean"){
                 trace = "none",key = F)
     }
   }
-}else if(m == "kmean" || m == "hierarchical"){
+}else if(m == "kmean" || m == "hierarchical" || m == "pam"){
   for(i in clusUniq){
     K2 <- (scaledata[clusts==i,])
     if(nrow(K2) > 1){
@@ -382,6 +413,8 @@ if(m == "fuzzy_kmean"){
       core <- Kmolten[Kmolten$cluster==i,]
       corscore <- function(x){cor(x,core$value)}
       score <- apply(K2, 1, corscore)
+      # add the correlations to the list
+      cors <- c(cors, score)
       #get the data frame into long format for plotting
       K2molten <- melt(K2)
       colnames(K2molten) <- c('gene','sample','value')
@@ -397,7 +430,7 @@ if(m == "fuzzy_kmean"){
       K2molten$order_factor <- factor(K2molten$order_factor , levels = K2molten$order_factor)
       
       # Everything on the same plot
-      if(m == "kmean"){
+      if(m == "kmean" || m =="pam"){
         p2 <- ggplot(K2molten, aes(x=sample,y=value)) + 
           geom_line(aes(colour=score, group=gene)) +
           scale_colour_gradientn(colours=c('blue1','red2')) +
@@ -436,3 +469,26 @@ if(m == "fuzzy_kmean"){
   }
 }
 dev.off() 
+
+#########################################################################################
+#############       create output file containing the clusters          #################
+#########################################################################################
+
+# create data frame containing cluster and if available correlation values or memberships
+if(m == "fuzzy_kmean"){
+  # fuzzy_kmeans
+  lijst <- data.frame(selection$gene, selection$cluster, selection$membership )
+  colnames(lijst) <- c("gene", "clusters", "membership")
+}else if(m == "kmean" || m == "pam"){
+  # kmean and pam
+  lijst <- merge(as.data.frame(clusts), as.data.frame(cors), by="row.names", sort=FALSE)
+  colnames(lijst) <- c("gene", "clusters", "correlation")
+  lijst <- lijst %>% filter(correlation > r)
+}else{
+  # hierarchical
+  lijst <- data.frame(rownames(as.data.frame(clusts)), clusts)
+  colnames(lijst) <- c("gene", "clusters")
+}
+
+# Write the dataframe as a tab-delimited file
+write.table(lijst, file=o, sep = "\t",quote=F,row.names=F)
