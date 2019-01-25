@@ -5,10 +5,11 @@ A snakemake pipeline for the analysis of RNA-seq data that makes use of [hisat2]
 [![Miniconda](https://img.shields.io/badge/miniconda-blue.svg)](https://conda.io/miniconda)
 
 # Aim
-To align, count, normalize couts and compute gene differential expressions between conditions using paired-end Illumina RNA-seq data.
+To align, count, normalize counts and compute gene differential expressions between conditions using paired-end Illumina RNA-seq data.
 
 # Description
-This pipeline analyses the raw RNA-seq data and produce a file containing normalized counts, differential expression and functions of transcripts. The raw fastq files will be trimmed for adaptors and quality checked with trimmomatic. Next, the necessary genome fasta sequence and transcriptome references will be downloaded and the trimmed reads will be mapped against it  using hisat2. With stringtie and a reference annotation a new annotation will be created. This new annotation will be used to obtain the raw counts and do a local blast to a transcriptome fasta containing predicted functions. The counts are normalized and differential expressions are calculated using DESeq2. This data is combined with the predicted functions to get the final results table.
+This pipeline analyses the raw RNA-seq data and produces a file containing normalized counts, differential expression, numbers of the clusters the genes have been assigned to and functions of transcripts. 
+The raw fastq files will be trimmed for adaptors and quality checked with trimmomatic. Next, the necessary genome sequence fastas will be downloaded to be used for the mapping of the trimmed reads using hisat2. With stringtie and a downloaded reference annotation a new annotation will be created. This new annotation will be used to obtain the raw counts and do a local blast to a reference transcriptome fasta containing predicted functions. The counts are normalized and differential expressions are calculated using DESeq2. significantly expressed genes are used to create heatmaps and plots both in total and clustered. finally the DESeq2, blast and clustering data are combined to get the final results table.
 
 # Prerequisites: what you should be able to do before using this Snakemake pipeline
 - Some command of the Unix Shell to connect to a remote server where you will execute the pipeline (e.g. SURF Lisa Cluster). You can find a good tutorial from the Software Carpentry Foundation [here](https://swcarpentry.github.io/shell-novice/) and another one from Berlin Bioinformatics [here](http://bioinformatics.mdc-berlin.de/intro2UnixandSGE/unix_for_beginners/README.html).
@@ -58,3 +59,5 @@ For cluster execution, please refer to the [Snakemake reference](https://snakema
 - the fastqc report files __\*.html__
 - the unscaled RNA-Seq read counts: __counts.txt__
 - the differential expression file __results.tsv__
+- the combined results file __final.txt__
+
