@@ -1,8 +1,40 @@
 import os
 import sys
+from optparse import OptionParser 
+
+# get the command line arguments
+parser = OptionParser(description="Script that combines the normalized and differential expression data as outputted by DESeq2.R, the clusters as outputted by plotscript.R and the results from the blast against the reference proteome. Resulting in a combined tab-delimeted data file")
+parser.add_option('-r', '--result_file', 
+                    type=str,
+                    default="results/result.csv",
+                    metavar="",
+                    help = "path and name of of the input file, being the output file of the R-script DESeq2.R, default = results/result.csv")
+parser.add_option('-f', '--fasta_file', 
+                    type=str,
+                    default="genome/stringtie_transcriptome.fasta",
+                    metavar="",
+                    help = "path and name of the stringtie transcriptome fasta file, a file containing the fastas of the de novo generated stringtie transcriptome, default = result/helperFile.csv")
+parser.add_option('-b', '--blast_file', 
+                    type=str,
+                    default="results/stringtie_transcriptome_blast.txt",
+                    metavar="",
+                    help = "path and name of of the blast file, a tab delimited file containing the blast result for the de novo transcriptome, default = results/result.csv")
+parser.add_option('-c', '--cluster_file', 
+                    type=str,
+                    default="result/clusters.csv",
+                    metavar="",
+                    help = "path and name of the clusters file, a tab delimited file containing cluster numbers and depending on the method of clustering correlation values or membership values., default = result/helperFile.csv")
+parser.add_option('-o', '--output_file', 
+                    type=str,
+                    default="result/final.txt",
+                    metavar="",
+                    help = "path and name of the output file. A tab delimimited file containing normalised reads, differential expressions and (adjusted)p-values, number of clusters the genes partisioned to and the hypothetical function as found by a blast. default = result/final.txt")
+
+
+(options, args) = parser.parse_args()
 
 args = sys.argv
-fa = open(args[1], "r")
+fa = open(open(options.fasta_file, "r")
 name = ""
 names = {}
 combis = {}
@@ -23,7 +55,7 @@ combis[no] = name
 fa.close()
 
 lijst = []
-fu = open(args[2], "r")
+fu = open(options.blast_file, "r")
 for l in fu:
     l = l.rstrip().split("\t")
     if combis[l[0]] not in lijst:
@@ -31,7 +63,7 @@ for l in fu:
         lijst.append(combis[l[0]])
 fu.close()
 
-clusts = open("outFile.txt", "r")
+clusts = open(options.cluster_file, "r")
 clusters = {}
 for line in clusts:
     line = line.rstrip()
@@ -41,8 +73,8 @@ for line in clusts:
     clusters[line[0]] = "\t".join(line[1:])
 clusts.close()
 
-inFile  = open(args[3], "r")
-uitFile = open(args[4], "w")
+inFile  = open(options.result_file, "r")
+uitFile = open(options.output_file, "w")
 for l in inFile:
     l = l.rstrip().split("\t")
     if "genes" in l[0]:
