@@ -1,5 +1,3 @@
-import os
-import sys
 from optparse import OptionParser 
 
 # get the command line arguments
@@ -29,11 +27,16 @@ parser.add_option('-o', '--output_file',
                     default="result/final.txt",
                     metavar="",
                     help = "path and name of the output file. A tab delimimited file containing normalised reads, differential expressions and (adjusted)p-values, number of clusters the genes partisioned to and the hypothetical function as found by a blast. default = result/final.txt")
+parser.add_option('-p', '--working_dir', 
+                    type=str,
+                    default="temp/mapped/",
+                    metavar="",
+                    help = "path to bam files, to be removed from the sample names in the header of the final output file. default = temp/mapped/")
 
 
 (options, args) = parser.parse_args()
 
-args = sys.argv
+# get combination of numbers and transcript name.
 fa = open(open(options.fasta_file, "r")
 name = ""
 names = {}
@@ -54,6 +57,7 @@ names[name] = [str(len(names[name])), names[name]]
 combis[no] = name
 fa.close()
 
+# get 
 lijst = []
 fu = open(options.blast_file, "r")
 for l in fu:
@@ -78,6 +82,7 @@ uitFile = open(options.output_file, "w")
 for l in inFile:
     l = l.rstrip().split("\t")
     if "genes" in l[0]:
+        l = [x.replace(options.working_dir, "") for x in l]    # remove path from sample names
         l.append("\t".join([clusters["gene"], "length\tsequence\tlength of hit\te-value\tname and function"]))
     elif l[0] in clusters:
             l.append(clusters[l[0]] + "\t".join(names[l[0]]))
