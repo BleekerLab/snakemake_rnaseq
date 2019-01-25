@@ -5,9 +5,9 @@ from optparse import OptionParser
 parser = OptionParser(description="python script to create pvalue and log2(foldchange) filtered ")
 parser.add_option('-i', '--input_file', 
                     type=str,
-                    default="results/result.csv",
+                    default="results/plotSelection.txt",
                     metavar="",
-                    help = "path and name of of the input file, being the output file of the R-script DESeq2.R, default = results/result.csv")
+                    help = "path and name of of the input file, being the output file of the R-script DESeq2.R, default = results/plotSelection.txt")
 parser.add_option('-f', '--helper_file', 
                     type=str,
                     default="result/helperFile.csv",
