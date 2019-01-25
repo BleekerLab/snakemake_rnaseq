@@ -361,19 +361,19 @@ rule results_function:
     input:
         fa    = WORKING_DIR + "genome/stringtie_transcriptome.fasta",
         blast = WORKING_DIR + "results/stringtie_transcriptome_blast.txt",
-        clusts= WORKING_DIR + "results/clusters.txt
+        clusts= WORKING_DIR + "results/clusters.txt,
         deseq = WORKING_DIR + "results/result.csv"
     output:
         final = RESULT_DIR + "final.txt"
     params:
         path  = WORKING_DIR + "mapped/"
     shell:
-        "python scripts/DE_with_Function.py ",
-        "-f {input.fa} ",
-        "-b {input.blast} ",
-        "-c {input.clusts} ",
-        "-r {input.deseq} ",
-        "-o {output.final} ",
+        "python scripts/DE_with_Function.py "
+        "-f {input.fa} "
+        "-b {input.blast} "
+        "-c {input.clusts} "
+        "-r {input.deseq} "
+        "-o {output.final} "
         "-p {params.path"
         
 #####################################################
@@ -383,14 +383,14 @@ rule results_function:
 
 rule filter_for_plots:
     input:
-        result      = RESULT_DIR + "results/result.csv"
+        result      = RESULT_DIR + "results/result.csv",
         helper      = RESULT_DIR + "result/helperFile.csv"
     output:
         RESULT_DIR + "result/plotSelection.txt"
     params:
-        minimum_reads      =  int(config["fliter_for_plots"]["minimum_reads"])
-        minimum_foldchange =  float(config["fliter_for_plots"]["minimum_foldchange"])
-        maximum_pvalue     =  float(config["fliter_for_plots"]["maximum_pvalue"])
+        minimum_reads      =  int(config["fliter_for_plots"]["minimum_reads"]),
+        minimum_foldchange =  float(config["fliter_for_plots"]["minimum_foldchange"]),
+        maximum_pvalue     =  float(config["fliter_for_plots"]["maximum_pvalue"]),
         average_samples    =  str(config["fliter_for_plots"]["average_samples"])
      conda:
         "envs/filter_for_plots.yaml"
@@ -399,8 +399,10 @@ rule filter_for_plots:
         "-i {input.result} "
         "-f {input.helper} "
         "-o {output} "
+        "-v {params.minimum_foldchange} "
         "-r {params.minimum_reads} "
-        "
+        "-p {params.maximum_pvalue} "
+        "-a {params.average_samples}"
 
 rule make_plots:
     input:
@@ -408,11 +410,11 @@ rule make_plots:
     output:
         RESULT_DIR + "plots.pdf"
     params:
-        method_of_clustering = int(config["make_plots"]["method_of_clustering"])
-        opt_clust_number     = str(config["make_plots"]["opt_clust_number"])
-        number_of_clusters   = int(config["make_plots"]["number_of_clusters"])
-        height_in_dendrogram = float(config["make_plots"]["height_in_dendrogram"])
-        membership_min       = float(config["make_plots"]["membership_min"])
+        method_of_clustering = int(config["make_plots"]["method_of_clustering"]),
+        opt_clust_number     = str(config["make_plots"]["opt_clust_number"]),
+        number_of_clusters   = int(config["make_plots"]["number_of_clusters"]),
+        height_in_dendrogram = float(config["make_plots"]["height_in_dendrogram"]),
+        membership_min       = float(config["make_plots"]["membership_min"]),
         colour_of_heatmap    = str(config["make_plots"]["colour_of_heatmap"])
     conda:
         "envs/plotmaker.yaml
