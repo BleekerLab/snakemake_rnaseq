@@ -30,13 +30,25 @@ for l in fu:
         names[combis[l[0]]] += l[2:]
         lijst.append(combis[l[0]])
 fu.close()
+
+clusts = open("outFile.txt", "r")
+clusters = {}
+for line in clusts:
+    line = line.rstrip()
+    line = line.split("\t")
+    if len(line) == 2:
+        line.append("NaN")
+    clusters[line[0]] = "\t".join(line[1:])
+clusts.close()
+
 inFile  = open(args[3], "r")
 uitFile = open(args[4], "w")
-
 for l in inFile:
     l = l.rstrip().split("\t")
     if "genes" in l[0]:
-        l.append("length\tsequence\tlength of hit\te-value\tname and function")
+        l.append("\t".join([clusters["gene"], "length\tsequence\tlength of hit\te-value\tname and function"]))
+    elif l[0] in clusters:
+            l.append(clusters[l[0]] + "\t".join(names[l[0]]))
     else:
         if l[0] in names:
             l.append("\t".join(names[l[0]]))
