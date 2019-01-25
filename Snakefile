@@ -361,11 +361,20 @@ rule results_function:
     input:
         fa    = WORKING_DIR + "genome/stringtie_transcriptome.fasta",
         blast = WORKING_DIR + "results/stringtie_transcriptome_blast.txt",
+        clusts= WORKING_DIR + "results/clusters.txt
         deseq = WORKING_DIR + "results/result.csv"
     output:
         final = RESULT_DIR + "final.txt"
+    params:
+        path  = WORKING_DIR + "mapped/"
     shell:
-        "python scripts/DE_with_Function.py {input.fa} {input.blast} {input.deseq} {output.final}"
+        "python scripts/DE_with_Function.py ",
+        "-f {input.fa} ",
+        "-b {input.blast} ",
+        "-c {input.clusts} ",
+        "-r {input.deseq} ",
+        "-o {output.final} ",
+        "-p {params.path"
         
 #####################################################
 #   get clusters, plots and heatmaps
