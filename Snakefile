@@ -411,7 +411,7 @@ rule make_plots:
         clusts = WORKING_DIR + "results/clusters.txt",
         plots  = RESULT_DIR + "plots.pdf"
     params:
-        method_of_clustering = int(config["make_plots"]["method_of_clustering"]),
+        method_of_clustering = str(config["make_plots"]["method_of_clustering"]),
         opt_clust_number     = str(config["make_plots"]["opt_clust_number"]),
         number_of_clusters   = int(config["make_plots"]["number_of_clusters"]),
         height_in_dendrogram = float(config["make_plots"]["height_in_dendrogram"]),
