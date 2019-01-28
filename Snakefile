@@ -362,7 +362,7 @@ rule results_function:
         fa    = WORKING_DIR + "genome/stringtie_transcriptome.fasta",
         blast = WORKING_DIR + "results/stringtie_transcriptome_blast.txt",
         clusts= WORKING_DIR + "results/clusters.txt,
-        deseq = WORKING_DIR + "results/result.csv"
+        deseq = RESULT_DIR + "result.csv""
     output:
         final = RESULT_DIR + "final.txt"
     params:
@@ -374,7 +374,7 @@ rule results_function:
         "-c {input.clusts} "
         "-r {input.deseq} "
         "-o {output.final} "
-        "-p {params.path"
+        "-p {params.path}"
         
 #####################################################
 #   get clusters, plots and heatmaps
@@ -383,10 +383,10 @@ rule results_function:
 
 rule filter_for_plots:
     input:
-        result      = RESULT_DIR + "results/result.csv",
-        helper      = RESULT_DIR + "result/helperFile.csv"
+        result      = RESULT_DIR + "result.csv",
+        helper      = RESULT_DIR + "helperFile.csv"
     output:
-        RESULT_DIR + "result/plotSelection.txt"
+        RESULT_DIR + "plotSelection.txt"
     params:
         minimum_reads      =  int(config["fliter_for_plots"]["minimum_reads"]),
         minimum_foldchange =  float(config["fliter_for_plots"]["minimum_foldchange"]),
@@ -408,7 +408,8 @@ rule make_plots:
     input:
         RESULT_DIR + "result/plotSelection.txt"
     output:
-        RESULT_DIR + "plots.pdf"
+        clusts = WORKING_DIR + "results/clusters.txt
+        plots  = RESULT_DIR + "plots.pdf"
     params:
         method_of_clustering = int(config["make_plots"]["method_of_clustering"]),
         opt_clust_number     = str(config["make_plots"]["opt_clust_number"]),
@@ -427,6 +428,7 @@ rule make_plots:
         "-H {params.height_in_dendrogram} "
         "-q {params.membership_min} "
         "-c {params.colour_of_heatmap} "
-        "-o {output}"
+        "-o {output.clusts} "
+        "-p {output.plots}"
         
 
