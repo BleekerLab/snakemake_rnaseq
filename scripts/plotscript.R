@@ -30,12 +30,12 @@ option_list = list(
                 the cluster, if too low it will be excluded from all clusters!. should be a value
                 between 0.0 and 1.0. Only to be used in combination with -m = kmean or -m = pam. 
                 Best to first run with a low value, and adjust based on results if needed.
-                default is 0.5", metavar="double")
+                default is 0.5", metavar="double"),
   make_option(c("-c", "--colour_of_heatmaps"), type="character", default=c("white","green","green4","violet","purple"), help="colors of the heatmaps. needs to be a list of two or more colors. 
                 To see a list of all 657 colour names in R: colors()
                 default is the colourblind friendly: 
                 c(\"white\",\"green\",\"green4\",\"violet\",\"purple\")", metavar="character"),
-  make_option(c("-p", "--plots_output_file"), type="character", default="results/plots.pdf", help="name of multipage pdf file where to output all the plots.", metavar="character")
+  make_option(c("-p", "--plots_output_file"), type="character", default="results/plots.pdf", help="name of multipage pdf file where to output all the plots.", metavar="character"),
   make_option(c("-o", "--clusters_output_file"), type="character", default="results/plots.pdf", help="name of multipage pdf file where to output all the plots.", metavar="character")
   )
 # parse the command-line arguments and pass them to a list called 'opt'
