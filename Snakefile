@@ -418,7 +418,7 @@ rule make_plots:
         membership_min       = float(config["make_plots"]["membership_min"]),
         colour_of_heatmap    = str(config["make_plots"]["colour_of_heatmap"])
     conda:
-        "envs/plotmaker.yaml"
+        "envs/plotsmaker.yaml"
     shell:
         "Rscript scripts/plotscript.R "
         "-i {input} "
