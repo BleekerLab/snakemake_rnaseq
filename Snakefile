@@ -59,7 +59,7 @@ rule all:
         FASTQC = expand(RESULT_DIR + "fastqc/{sample}.{step}.html", sample = SAMPLES,step=["original","trimmed"]),
         GTF    = WORKING_DIR + "genome/stringtie_transcriptome.gtf",
         COUNTS = RESULT_DIR + "counts.txt",
-        DESeq2 = WORKING_DIR + "results/result.csv",
+        DESeq2 = RESULT_DIR + "result.csv",
         FINAL  = RESULT_DIR + "final.txt"
     message:
         "Job done! Removing temporary directory"
@@ -344,8 +344,8 @@ rule DESeq2_analysis:
         counts      = RESULT_DIR + "counts.txt",
         samplefile  = samplefile
     output:
-        result      = RESULT_DIR + "results/result.csv"
-        helper      = RESULT_DIR + "result/helperFile.csv"
+        result      = RESULT_DIR + "result.csv",
+        helper      = RESULT_DIR + "helperFile.csv"
     message:
         "normalizing read counts en creating differential expression table"
     params:
@@ -361,8 +361,8 @@ rule results_function:
     input:
         fa    = WORKING_DIR + "genome/stringtie_transcriptome.fasta",
         blast = WORKING_DIR + "results/stringtie_transcriptome_blast.txt",
-        clusts= WORKING_DIR + "results/clusters.txt,
-        deseq = RESULT_DIR + "result.csv""
+        clusts= WORKING_DIR + "results/clusters.txt",
+        deseq = RESULT_DIR + "result.csv"
     output:
         final = RESULT_DIR + "final.txt"
     params:
@@ -406,9 +406,9 @@ rule filter_for_plots:
 
 rule make_plots:
     input:
-        RESULT_DIR + "result/plotSelection.txt"
+        RESULT_DIR + "plotSelection.txt"
     output:
-        clusts = WORKING_DIR + "results/clusters.txt
+        clusts = WORKING_DIR + "results/clusters.txt",
         plots  = RESULT_DIR + "plots.pdf"
     params:
         method_of_clustering = int(config["make_plots"]["method_of_clustering"]),
