@@ -37,7 +37,7 @@ parser.add_option('-p', '--working_dir',
 (options, args) = parser.parse_args()
 
 # get combination of numbers and transcript name.
-fa = open(open(options.fasta_file, "r")
+fa = open(options.fasta_file, "r")
 name = ""
 names = {}
 combis = {}
