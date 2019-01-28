@@ -388,10 +388,10 @@ rule filter_for_plots:
     output:
         RESULT_DIR + "plotSelection.txt"
     params:
-        minimum_reads      =  int(config["fliter_for_plots"]["minimum_reads"]),
-        minimum_foldchange =  float(config["fliter_for_plots"]["minimum_foldchange"]),
-        maximum_pvalue     =  float(config["fliter_for_plots"]["maximum_pvalue"]),
-        average_samples    =  str(config["fliter_for_plots"]["average_samples"])
+        minimum_reads      =  int(config["filter_for_plots"]["minimum_reads"]),
+        minimum_foldchange =  float(config["filter_for_plots"]["minimum_foldchange"]),
+        maximum_pvalue     =  float(config["filter_for_plots"]["maximum_pvalue"]),
+        average_samples    =  str(config["filter_for_plots"]["average_samples"])
     conda:
         "envs/filter_for_plots.yaml"
     shell:
