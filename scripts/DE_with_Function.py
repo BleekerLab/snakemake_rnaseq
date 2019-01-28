@@ -85,7 +85,10 @@ for l in inFile:
         l = [x.replace(options.working_dir, "") for x in l]    # remove path from sample names
         l.append("\t".join([clusters["gene"], "length\tsequence\tlength of hit\te-value\tname and function"]))
     elif l[0] in clusters:
+        if l[0] in names:
             l.append(clusters[l[0]] + "\t".join(names[l[0]]))
+        else:
+            print(l[0], clusters[l[0]])
     else:
         if l[0] in names:
             l.append("\t".join(names[l[0]]))
