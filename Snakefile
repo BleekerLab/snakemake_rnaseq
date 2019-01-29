@@ -393,8 +393,8 @@ rule filter_for_plots:
         minimum_foldchange =  float(config["filter_for_plots"]["minimum_foldchange"]),
         maximum_pvalue     =  float(config["filter_for_plots"]["maximum_pvalue"]),
         average_samples    =  str(config["filter_for_plots"]["average_samples"])
-    conda:
-        "envs/filter_for_plots.yaml"
+    #conda:
+        #"envs/filter_for_plots.yaml"
     shell:
         "python filterForPlots.py "
         "-i {input.result} "
