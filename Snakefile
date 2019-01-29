@@ -396,7 +396,7 @@ rule filter_for_plots:
     #conda:
         #"envs/filter_for_plots.yaml"
     shell:
-        "python script/filterForPlots.py "
+        "python scripts/filterForPlots.py "
         "-i {input.result} "
         "-f {input.helper} "
         "-o {output} "
