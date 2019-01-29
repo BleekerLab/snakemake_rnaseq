@@ -428,7 +428,7 @@ rule make_plots:
         "-k {params.number_of_clusters} "
         "-H {params.height_in_dendrogram} "
         "-q {params.membership_min} "
-        "-c {params.colour_of_heatmap} "
+        #"-c {params.colour_of_heatmap} "
         "-o {output.clusts} "
         "-p {output.plots}"
         
