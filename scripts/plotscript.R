@@ -335,8 +335,8 @@ colnames(Kmolten) <- c('sample','cluster','value')
 # In case of use of pam, the cluster centroids wil be the medoids (the expression profiles of the genes that fit the clusters best)
 if (m == "pam"){
   pClustcentroids <- t(pam.Pclusts$"medoids")
-  KmoltenP <- melt(pClustcentroids)
-  colnames(KmoltenP) <- c('sample','cluster','value')
+  Kmolten <- melt(pClustcentroids)
+  colnames(Kmolten) <- c('sample','cluster','value')
 } 
 	  
 p1 <- ggplot(Kmolten, aes(x=sample,y=value, group=cluster, colour=as.factor(cluster))) + 
