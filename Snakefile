@@ -60,7 +60,7 @@ rule all:
         GTF    = WORKING_DIR + "genome/stringtie_transcriptome.gtf",
         COUNTS = RESULT_DIR + "counts.txt",
         DESeq2 = RESULT_DIR + "result.csv",
-        FINAL  = RESULT_DIR + "final.txt"
+        FINAL  = RESULT_DIR + "final.txt",
         plots  = RESULT_DIR + "plots.pdf"
     message:
         "Job done! Removing temporary directory"
