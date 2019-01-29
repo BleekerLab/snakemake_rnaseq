@@ -88,7 +88,7 @@ for l in inFile:
         if l[0] in names:
             l.append(clusters[l[0]] + "\t".join(names[l[0]]))
         else:
-            print(l[0], clusters[l[0]])
+            l.append(clusters[l[0]] + "\tWas not included in the blast.")
     else:
         if l[0] in names:
             l.append("NaN\tNaN\t"+ "\t".join(names[l[0]]))
