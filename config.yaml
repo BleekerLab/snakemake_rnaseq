@@ -42,8 +42,8 @@ filter_for_plots:
   average_samples    : 'yes'       # if "yes", samples within each of the conditions will be averaged, if not the sample values will be outputted
 
 make_plots:
-  method_of_clustering : 'fuzzy_kmean'   # options are hierchical, kmean and fuzzy_kmean
-  opt_clust_number     : 'fixed'        # options for hierchical are: fixed, height, dynamic options for (fuzzy-)kmean are: fixed, average_silhouette_width, calinsky_criterion, gap_statistic or affinity_propogation.
+  method_of_clustering : 'pam'   # options are hierchical, kmean and fuzzy_kmean
+  opt_clust_number     : 'average_silhouette_width'        # options for hierchical are: fixed, height, dynamic options for (fuzzy-)kmean are: fixed, average_silhouette_width, calinsky_criterion, gap_statistic or affinity_propogation.
   number_of_clusters   : '5'              # to be used when opt_clusts_number = fixed any integer greater than 1
   height_in_dendrogram : '1.5'            # to be used when opt_clusts_number = height number between 0.0 and 2.0 (depents on gene dendrogram)
   colour_of_heatmap    : 'c("white","green","green4","violet","purple")'  # 2 or more colours from list in R "colors()" also used al lot: c("green", "black", "red")
