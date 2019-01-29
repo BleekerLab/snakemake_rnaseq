@@ -91,7 +91,7 @@ for l in inFile:
             print(l[0], clusters[l[0]])
     else:
         if l[0] in names:
-            l.append("\t".join(names[l[0]]))
+            l.append("NaN\tNaN\t"+ "\t".join(names[l[0]]))
     uitFile.write("\t".join(l)+"\n")
 inFile.close()
 uitFile.close()
