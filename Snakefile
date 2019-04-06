@@ -17,7 +17,6 @@ RESULT_DIR = config["result_dir"]
 
 # fetch URL to transcriptome multi fasta from configfile
 genome_url = config["refs"]["genome"]
-transcriptome_fasta_url = config["refs"]["proteins_fasta"]
 transcriptome_gtf_url= config["refs"]["transcriptome_gtf"]
 
 ########################
@@ -29,39 +28,46 @@ units = pd.read_table(config["units"], dtype=str).set_index(["sample"], drop=Fal
 
 # create lists containing the sample names and conditions
 SAMPLES = units.index.get_level_values('sample').unique().tolist()
+samples = pd.read_csv(config["units"], dtype=str,index_col=0,sep="\t")
 #CONDITIONS = list(pd.read_table(config["units"])["condition"])
-fwd        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.read_table(config["units"])["fq1"])))
-rev        = dict(zip(list(pd.read_table(config["units"])["sample"]), list(pd.read_table(config["units"])["fq2"])))
 samplefile = config["units"]
 
 
 ###########################
 # Input functions for rules
 ###########################
+
+def sample_is_single_end(sample):
+    """This function detect missing value in the column 2 of the units.tsv"""
+    if "fq2" not in samples.columns:
+        return True
+    else:
+        return pd.isnull(samples.loc[(sample), "fq2"])
+
 def get_fastq(wildcards):
-    return units.loc[(wildcards.sample), ["fq1", "fq2"]].dropna()
+	""" This function checks if the sample has paired end or single end reads
+	and returns 1 or 2 names of the fastq files """
+	if sample_is_single_end(wildcards.sample):
+		return samples.loc[(wildcards.sample), ["fq1"]].dropna()
+	else:
+		return samples.loc[(wildcards.sample), ["fq1", "fq2"]].dropna()
 
-def get_forward_fastq(wildcards):
-    return units.loc[(wildcards.sample), ["fq1"]].dropna()
+def get_trimmed(wildcards):
+	""" This function checks if sample is paired end or single end
+	and returns 1 or 2 names of the trimmed fastq files """
+	if sample_is_single_end(wildcards.sample):
+		return WORKING_DIR + wildcards.sample + "_R1_trimmed.fq.gz"
+	else:
+		return [WORKING_DIR + wildcards.sample + "_R1_trimmed.fq.gz", WORKING_DIR + wildcards.sample + "_R2_trimmed.fq.gz"]
 
-def get_reverse_fastq(wildcards):
-    return units.loc[(wildcards.sample), ["fq2"]].dropna()
-
-def get_bams():
-    bams = [b for bam in glob("mapped/*.bam")]
-    return bams
 
 #################
 # Desired outputs
 #################
 rule all:
     input:
-        FASTQC = expand(RESULT_DIR + "fastqc/{sample}.{step}.html", sample = SAMPLES,step=["original","trimmed"]),
-        GTF    = WORKING_DIR + "genome/stringtie_transcriptome.gtf",
-        COUNTS = RESULT_DIR + "counts.txt",
-        DESeq2 = RESULT_DIR + "result.csv",
-        FINAL  = RESULT_DIR + "final.txt",
-        plots  = RESULT_DIR + "plots.pdf"
+        expand(WORKING_DIR + "mapped/{sample}.bam", sample = SAMPLES)
+
     message:
         "Job done! Removing temporary directory"
 
@@ -84,105 +90,48 @@ rule get_genome_fasta:
     shell:
         "wget -O {output} {genome_url}"
 
-rule get_transcriptome_fasta:
-    output:
-        WORKING_DIR + "genome/ref_transcriptome.fasta"
-    message:
-        "downloading the required transcriptome fasta file"
-    shell:
-        "wget -O {output} {transcriptome_fasta_url}"
-
 rule get_transcriptome_gtf:
     output:
         WORKING_DIR + "genome/ref_transcriptome.gff"
     message:
         "downloading required transcriptome gtf file"
+    conda:
+        "envs/wget.yaml"
     shell:
         "wget -O {output} {transcriptome_gtf_url}"
 
 
 ##################################
-# Fastq QC before / after trimming
+# Fastp
 ##################################
 
-# create quality reports of original reads
-rule fastqc_before_trimming:
-    input:
-        fwd = get_forward_fastq,
-        rev = get_reverse_fastq
-    output:
-        html = RESULT_DIR + "fastqc/{sample}.original.html",
-        json = RESULT_DIR + "fastqc/{sample}.original.json"
-    log:
-        RESULT_DIR + "logs/fastqc/{sample}.fastp.log"
-    params:
-        RESULT_DIR + "fastqc/"
-    message:
-        "Quality check of trimmed {wildcards.sample} sample with fastp"
-    conda:
-        "envs/fastp.yaml"
-    shell:
-        "fastp -i {input.fwd} -I {input.rev} -h {output.html} -j {output.json} 2>{log}"
-
-# trim and quality filter of the reads
-rule trimmomatic:
+rule fastp:
     input:
         get_fastq
     output:
-        fw_reads        = temp(WORKING_DIR + "trimmed/{sample}_fw.fq"),
-        rev_reads       = temp(WORKING_DIR + "trimmed/{sample}_rev.fq"),
-        forwardUnpaired = temp(WORKING_DIR + "trimmed/{sample}_forward_unpaired.fastq"),
-        reverseUnpaired = temp(WORKING_DIR + "trimmed/{sample}_reverse_unpaired.fastq")
-    message:
-        "trimming {wildcards.sample} reads"
-    conda:
-        "envs/trimmomatic.yaml"
+        fq1 = WORKING_DIR + "{sample}_R1_trimmed.fq.gz",
+        fq2 = WORKING_DIR + "{sample}_R2_trimmed.fq.gz",
+        html = RESULT_DIR + "fastp/{sample}.html"
+    message:"trimming {wildcards.sample} reads"
+    threads: 10
     log:
-        "logs/trimmomatic/{sample}.log"
+        RESULT_DIR + "fastp/{sample}.log.txt"
     params:
-        seedMisMatches         =  str(config['trimmomatic']['seedMisMatches']),
-        palindromeClipTreshold =  str(config['trimmomatic']['palindromeClipTreshold']),
-        simpleClipThreshhold   =  str(config['trimmomatic']['simpleClipThreshold']),
-        LeadMinTrimQual        =  str(config['trimmomatic']['LeadMinTrimQual']),
-        TrailMinTrimQual       =  str(config['trimmomatic']['TrailMinTrimQual']),
-        windowSize             =  str(config['trimmomatic']['windowSize']),
-        avgMinQual             =  str(config['trimmomatic']['avgMinQual']),
-        minReadLen             =  str(config['trimmomatic']['minReadLength']),
-        phred                  =  str(config["trimmomatic"]["phred"]),
-        adapters               = str(config["trimmomatic"]["adapters"])
-    threads: 1
-    shell:
-        "trimmomatic PE {params.phred} -threads {threads} "
-        "{input} "
-        "{output.fw_reads} "
-        "{output.forwardUnpaired} "
-        "{output.rev_reads} "
-        "{output.reverseUnpaired} "
-        "ILLUMINACLIP:{params.adapters}:{params.seedMisMatches}:{params.palindromeClipTreshold}:{params.simpleClipThreshhold} "
-        "LEADING:{params.LeadMinTrimQual} "
-        "TRAILING:{params.TrailMinTrimQual} "
-        "SLIDINGWINDOW:{params.windowSize}:{params.avgMinQual} "
-        "MINLEN:{params.minReadLen} 2>{log}"
-
-# create quality reports of trimmed reads
-rule fastqc_after_trimming:
-    input:
-        fwd = WORKING_DIR + "trimmed/{sample}_fw.fq",
-        rev = WORKING_DIR + "trimmed/{sample}_rev.fq"
-    output:
-        html = RESULT_DIR + "fastqc/{sample}.trimmed.html",
-        json = RESULT_DIR + "fastqc/{sample}.trimmed.json",
-    log:
-        RESULT_DIR + "logs/fastqc/{sample}.fastp.log"
-    params:
-        RESULT_DIR + "fastqc/"
-    message:
-        "Quality check of trimmed {wildcards.sample} sample with fastp"
-    conda:
-        "envs/fastp.yaml"
-    shell:
-        "fastp -i {input.fwd} -I {input.rev} -h {output.html} -j {output.json} 2>{log}"
-
+        sampleName = "{sample}",
+        qualified_quality_phred = config["fastp"]["qualified_quality_phred"]
+    run:
+        if sample_is_single_end(params.sampleName):
+            shell("fastp --thread {threads}  --html {output.html} \
+            --qualified_quality_phred {params.qualified_quality_phred} \
+            --in1 {input} --out1 {output} \
+            2> {log}; \
+			touch {output.fq2}")
+        else:
+            shell("fastp --thread {threads}  --html {output.html} \
+            --qualified_quality_phred {params.qualified_quality_phred} \
+            --detect_adapter_for_pe \
+            --in1 {input[0]} --in2 {input[1]} --out1 {output.fq1} --out2 {output.fq2}; \
+            2> {log}")
 
 #########################
 # RNA-Seq read alignement
@@ -205,125 +154,29 @@ rule index:
 
 rule hisat_mapping:
     input:
-        fwd   = WORKING_DIR + "trimmed/{sample}_fw.fq",
-        rev   = WORKING_DIR + "trimmed/{sample}_rev.fq",
-        forwardUnpaired = WORKING_DIR + "trimmed/{sample}_forward_unpaired.fastq",
-        reverseUnpaired = WORKING_DIR + "trimmed/{sample}_reverse_unpaired.fastq",
+        get_trimmed,
         indexFiles = [WORKING_DIR + "genome/genome." + str(i) + ".ht2" for i in range(1,9)]
     output:
-        bamp  = temp(WORKING_DIR + "mapped/{sample}.pairs.bam"),
-        bamf  = temp(WORKING_DIR + "mapped/{sample}.fwd.bam"),
-        bamr  = temp(WORKING_DIR + "mapped/{sample}.rev.bam"),
         bams  = WORKING_DIR + "mapped/{sample}.bam"
     params:
         indexName = WORKING_DIR + "genome/genome"
     message:
         "mapping reads to genome to bam files."
-    conda:
-        "envs/hisat2_mapping.yaml"
+#    conda:
+#        "envs/hisat2_mapping.yaml"
     threads: 10
-    shell:
-        """
-        hisat2 -p {threads} --dta -x {params.indexName} -1 {input.fwd} -2 {input.rev} | samtools view -Sb -F 4 -o {output.bamp}
-        hisat2 -p {threads} --dta -x {params.indexName} -U {input.forwardUnpaired} | samtools view -Sb -F 4 -o {output.bamf}
-        hisat2 -p {threads} --dta -x {params.indexName} -U {input.reverseUnpaired} | samtools view -Sb -F 4 -o {output.bamr}
-        samtools merge {output.bams} {output.bamp} {output.bamf} {output.bamr}
-        """
+    run:
+        if sample_is_single_end(params.sampleName):
+            shell("hisat2 -p {threads} --dta -x {params.indexName} -1 {input.fwd} -2 {input.rev} \
+            | samtools view -Sb -F 4 -o {output.bamp}")
+        else:
+            shell("hisat2 -p {threads} -x {params.indexName} -U {input.fwd} \
+            | samtools view -Sb -F 4 -o {output.bamp}")
 
-###########################################
-# Create a de novo transcriptome annotation
-###########################################
-
-rule merge_bams:
-    input:
-        expand(WORKING_DIR + "mapped/{sample}.bam", sample = SAMPLES)
-    output:
-        merged = temp(WORKING_DIR + "merged.bam"),
-        bam_sorted = temp(WORKING_DIR + "merged_sorted.bam")
-    conda:
-        "envs/samtools.yaml"
-    shell:
-        """
-        samtools merge {output.merged} {input}
-        samtools sort {output.merged} -o {output.bam_sorted}
-        """
-
-rule create_stringtie_transcriptome:
-    input:
-        bam = WORKING_DIR + "merged_sorted.bam",
-        Rtc = WORKING_DIR + "genome/ref_transcriptome.gff"
-    output:
-        WORKING_DIR + "genome/stringtie_transcriptome.gtf"
-    #params:
-        # some parameters
-    conda:
-        "envs/stringtie.yaml"
-    message:
-        "creating transcriptome to stringtie_transcriptome.gtf."
-    threads:
-        10
-    shell:
-        "stringtie -G {input.Rtc} -o {output} {input.bam}"
-
-
-#############################################################
-#  Blast new transcriptome to get hypothetical gene functions
-#############################################################
-
-# create transcriptome index, for blasting
-rule get_ref_transcriptome_index:
-    input:
-        WORKING_DIR + "genome/ref_transcriptome.fasta"
-    output:
-        [WORKING_DIR + "genome/ref_transcriptome.fasta." + i for i in ("psq", "phr", "pin")]
-    conda:
-        "envs/blast.yaml"
-    shell:
-        "makeblastdb -in {input} -dbtype prot"
-
-# get fasta's from gtf file
-rule gtf_to_fasta:
-    input:
-        gtf  = WORKING_DIR + "genome/stringtie_transcriptome.gtf",
-        gen  = WORKING_DIR + "genome/genome.fasta"
-    output:
-        WORKING_DIR + "genome/stringtie_transcriptome.fasta"
-    conda:
-        "envs/tophat.yaml"
-    shell:
-        "gtf_to_fasta {input.gtf} {input.gen} {output}"
-
-# Do the blast
-rule blast_for_funtions:
-    input:
-        newTct     = WORKING_DIR + "genome/stringtie_transcriptome.fasta",
-        refTct     = WORKING_DIR + "genome/ref_transcriptome.fasta",
-        indexFiles = [WORKING_DIR + "genome/ref_transcriptome.fasta." + i for i in ("psq", "phr", "pin")]
-    output:
-        WORKING_DIR + "results/stringtie_transcriptome_blast.txt"
-    params:
-        evalue     = str(config['blast']['evalue']),     # 1e-10
-        outFmt     = str(config['blast']['outFmt']),     # 6 qseqid qlen slen evalue salltitles
-        maxTargets = str(config['blast']['maxTargets']) # 1bin/bash: indent: command not found
-    threads:
-        5
-    conda:
-        "envs/blast.yaml"
-    shell:
-        "blastx "
-        "-query {input.newTct} "
-        "-db {input.refTct} "
-        "-outfmt \"{params.outFmt}\" "
-        "-evalue {params.evalue} "
-        "-out {output} "
-        "-num_threads {threads} "
-        "-max_target_seqs {params.maxTargets}"
-
-        
 #########################################
 # Get table containing the raw counts
 #########################################
-        
+
 rule create_counts_table:
     input:
         bams = expand(WORKING_DIR + "mapped/{sample}.bam", sample = SAMPLES),
@@ -335,11 +188,11 @@ rule create_counts_table:
     shell:
         "featureCounts -O -t transcript -g gene_id -F 'gtf' -a {input.gff} -o {output} {input.bams}"
 
-        
+
 ############################################
-# normalize and get differential expressions 
+# normalize and get differential expressions
 ############################################
-        
+
 rule DESeq2_analysis:
     input:
         counts      = RESULT_DIR + "counts.txt",
@@ -356,7 +209,7 @@ rule DESeq2_analysis:
     shell:
         "Rscript scripts/DESeq2.R -c {input.counts} -s {input.samplefile} -o {output.result} -m {params.maxfraction} -f {output.helper}"
 
-   
+
 # combine differential expressions with hypothetical gene-functions
 rule results_function:
     input:
@@ -376,7 +229,7 @@ rule results_function:
         "-r {input.deseq} "
         "-o {output.final} "
         "-p {params.path}"
-        
+
 #####################################################
 #   get clusters, plots and heatmaps
 #####################################################
@@ -431,5 +284,3 @@ rule make_plots:
         #"-c {params.colour_of_heatmap} "
         "-o {output.clusts} "
         "-p {output.plots}"
-        
-
