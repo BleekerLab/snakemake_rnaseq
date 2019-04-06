@@ -157,9 +157,12 @@ rule hisat_mapping:
         get_trimmed,
         indexFiles = [WORKING_DIR + "genome/genome." + str(i) + ".ht2" for i in range(1,9)]
     output:
-        bams  = WORKING_DIR + "mapped/{sample}.bam"
+        bams  = WORKING_DIR + "mapped/{sample}.bam",
+        sum   = RESULT_DIR + "{sample}_sum.txt",
+        met   = RESULT_DIR + "{sample}_met.txt"
     params:
-        indexName = WORKING_DIR + "genome/genome"
+        indexName = WORKING_DIR + "genome/genome",
+        sampleName = "{sample}"
     message:
         "mapping reads to genome to bam files."
 #    conda:
@@ -168,10 +171,10 @@ rule hisat_mapping:
     run:
         if sample_is_single_end(params.sampleName):
             shell("hisat2 -p {threads} --dta -x {params.indexName} -1 {input.fwd} -2 {input.rev} \
-            | samtools view -Sb -F 4 -o {output.bamp}")
+            --new-summary {output.sum} --met-file {output.met} | samtools view -Sb -F 4 -o {output.bamp}")
         else:
             shell("hisat2 -p {threads} -x {params.indexName} -U {input.fwd} \
-            | samtools view -Sb -F 4 -o {output.bamp}")
+            --new-summary {output.sum} --met-file {output.met} | samtools view -Sb -F 4 -o {output.bamp}")
 
 #########################################
 # Get table containing the raw counts
