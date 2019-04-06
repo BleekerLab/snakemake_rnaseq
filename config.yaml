@@ -1,5 +1,5 @@
 
-units: data/samples.tsv        # Complete the tab sep value file with the path to the files and their conditions
+units: samples.tsv        # Complete the tab sep value file with the path to the files and their conditions
 
 ### Definition of the path Snakemake has to create
 working_dir: "temp/"
@@ -15,6 +15,9 @@ refs:
     "ftp://ftp.solgenomics.net/genomes/Petunia_axillaris/annotation/Petunia_axillaris_v1.6.2_gene_models.gff"
 
 ### Software parameters
+fastp:
+  qualified_quality_phred: 15 # the quality value that a base is qualified. Default 15 means phred quality >=Q15 is qualified. (int [=15])
+
 trimmomatic:
   adapters: "adapters.fasta"
   seedMisMatches: '2'
