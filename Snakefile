@@ -158,8 +158,8 @@ rule hisat_mapping:
         indexFiles = [WORKING_DIR + "genome/genome." + str(i) + ".ht2" for i in range(1,9)]
     output:
         bams  = WORKING_DIR + "mapped/{sample}.bam",
-        sum   = RESULT_DIR + "{sample}_sum.txt",
-        met   = RESULT_DIR + "{sample}_met.txt"
+        sum   = RESULT_DIR + "logs/{sample}_sum.txt",
+        met   = RESULT_DIR + "logs/{sample}_met.txt"
     params:
         indexName = WORKING_DIR + "genome/genome",
         sampleName = "{sample}"
@@ -170,11 +170,11 @@ rule hisat_mapping:
     threads: 10
     run:
         if sample_is_single_end(params.sampleName):
-            shell("hisat2 -p {threads} -x {params.indexName} -U {input} \
-            --new-summary {output.sum} --met-file {output.met} | samtools view -Sb -F 4 -o {output.bams}")
+            shell("hisat2 -p {threads} --summary-file {output.sum} --met-file {output.met} -x {params.indexName} \
+            -U {input} | samtools view -Sb -F 4 -o {output.bams}")
         else:
-            shell("hisat2 -p {threads} --dta -x {params.indexName} -1 {input[0]} -2 {input[1]} \
-            --new-summary {output.sum} --met-file {output.met} | samtools view -Sb -F 4 -o {output.bams}")
+            shell("hisat2 -p {threads} --summary-file {output.sum} --met-file {output.met} -x {params.indexName} \
+            -1 {input[0]} -2 {input[1]} | samtools view -Sb -F 4 -o {output.bams}")
 
 
 
