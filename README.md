@@ -59,5 +59,10 @@ For cluster execution, please refer to the [Snakemake reference](https://snakema
 - the fastqc report files __\*.html__
 - the unscaled RNA-Seq read counts: __counts.txt__
 - the differential expression file __results.tsv__
+
 - the combined results file __final.txt__
+
+
+# Directed Acyclic Graph of jobs
+![dag](./dag.png)
 
