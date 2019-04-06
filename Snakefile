@@ -170,11 +170,13 @@ rule hisat_mapping:
     threads: 10
     run:
         if sample_is_single_end(params.sampleName):
-            shell("hisat2 -p {threads} --dta -x {params.indexName} -1 {input.fwd} -2 {input.rev} \
+            shell("hisat2 -p {threads} -x {params.indexName} -U {input} \
             --new-summary {output.sum} --met-file {output.met} | samtools view -Sb -F 4 -o {output.bamp}")
         else:
-            shell("hisat2 -p {threads} -x {params.indexName} -U {input.fwd} \
+            shell("hisat2 -p {threads} --dta -x {params.indexName} -1 {input[0]} -2 {input[1]} \
             --new-summary {output.sum} --met-file {output.met} | samtools view -Sb -F 4 -o {output.bamp}")
+
+
 
 #########################################
 # Get table containing the raw counts
