@@ -56,9 +56,9 @@ def get_trimmed(wildcards):
 	""" This function checks if sample is paired end or single end
 	and returns 1 or 2 names of the trimmed fastq files """
 	if sample_is_single_end(wildcards.sample):
-		return WORKING_DIR + wildcards.sample + "_R1_trimmed.fq.gz"
+		return WORKING_DIR + "trimmed/" + wildcards.sample + "_R1_trimmed.fq.gz"
 	else:
-		return [WORKING_DIR + wildcards.sample + "_R1_trimmed.fq.gz", WORKING_DIR + wildcards.sample + "_R2_trimmed.fq.gz"]
+		return [WORKING_DIR + "trimmed/" + wildcards.sample + "_R1_trimmed.fq.gz", WORKING_DIR + "trimmed/" + wildcards.sample + "_R2_trimmed.fq.gz"]
 
 
 #################
@@ -67,7 +67,7 @@ def get_trimmed(wildcards):
 rule all:
     input:
         expand(WORKING_DIR + "mapped/{sample}.bam", sample = SAMPLES)
-
+        RESULT_DIR + "counts.txt"
     message:
         "Job done! Removing temporary directory"
 
@@ -109,8 +109,8 @@ rule fastp:
     input:
         get_fastq
     output:
-        fq1 = WORKING_DIR + "{sample}_R1_trimmed.fq.gz",
-        fq2 = WORKING_DIR + "{sample}_R2_trimmed.fq.gz",
+        fq1  = WORKING_DIR + "trimmed/" + "{sample}_R1_trimmed.fq.gz",
+        fq2  = WORKING_DIR + "trimmed/" + "{sample}_R2_trimmed.fq.gz",
         html = RESULT_DIR + "fastp/{sample}.html"
     message:"trimming {wildcards.sample} reads"
     threads: 10
@@ -185,7 +185,7 @@ rule hisat_mapping:
 rule create_counts_table:
     input:
         bams = expand(WORKING_DIR + "mapped/{sample}.bam", sample = SAMPLES),
-        gff  = WORKING_DIR + "genome/stringtie_transcriptome.gtf"
+        gff  = WORKING_DIR + "genome/ref_transcriptome.gff"
     output:
         RESULT_DIR + "counts.txt"
     conda:
