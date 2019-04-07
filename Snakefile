@@ -66,7 +66,7 @@ def get_trimmed(wildcards):
 #################
 rule all:
     input:
-        expand(WORKING_DIR + "mapped/{sample}.bam", sample = SAMPLES)
+        expand(WORKING_DIR + "mapped/{sample}.bam", sample = SAMPLES),
         RESULT_DIR + "counts.txt"
     message:
         "Job done! Removing temporary directory"
