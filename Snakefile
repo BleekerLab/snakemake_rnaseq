@@ -191,7 +191,7 @@ rule create_counts_table:
     conda:
         "envs/subread.yaml"
     shell:
-        "featureCounts -O -t transcript -g gene_id -F 'gtf' -a {input.gff} -o {output} {input.bams}"
+        "featureCounts -O -t mRNA -g ID -F 'gtf' -a {input.gff} -o {output} {input.bams}"
 
 
 ############################################
