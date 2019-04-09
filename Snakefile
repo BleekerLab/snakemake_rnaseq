@@ -67,8 +67,9 @@ def get_trimmed(wildcards):
 rule all:
     input:
         expand(WORKING_DIR + "mapped/{sample}.bam", sample = SAMPLES),
-        RESULT_DIR + "counts.txt"
-        RESULT_DIR + "result.csv"
+        RESULT_DIR + "counts.txt",
+        RESULT_DIR + "result.csv",
+        RESULT_DIR + "plotSelection.txt"
     message:
         "Job done! Removing temporary directory"
 
