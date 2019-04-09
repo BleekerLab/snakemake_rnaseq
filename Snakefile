@@ -69,7 +69,9 @@ rule all:
         expand(WORKING_DIR + "mapped/{sample}.bam", sample = SAMPLES),
         RESULT_DIR + "counts.txt",
         RESULT_DIR + "result.csv",
-        RESULT_DIR + "plotSelection.txt"
+        RESULT_DIR + "plotSelection.txt",
+        clusts = WORKING_DIR + "results/clusters.txt",
+        plots  = RESULT_DIR + "plots.pdf"
     message:
         "Job done! Removing temporary directory"
 
