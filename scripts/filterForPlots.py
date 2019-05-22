@@ -83,7 +83,7 @@ avarage   = options.average_samples.upper()
 
 for l in inputData:
     count += 1
-    if l.startswith("STRG"):
+    if l.startswith("genes") == False and len(l) > 5:
         l = l.replace("NA", "1")         # replace NA values in P-value to 1
         l = l.replace("#VALUE!", "0")    # replace NA values in foldchange to 0
         f = l.rstrip()                   # remove white space and line break at the end.
