@@ -150,8 +150,6 @@ rule index:
         "indexing genome"
     params:
         WORKING_DIR + "genome/genome"
-    conda:
-        "envs/hisat2.yaml"
     threads: 10
     shell:
         "hisat2-build -p {threads} {input} {params} --quiet"
@@ -169,8 +167,6 @@ rule hisat_mapping:
         sampleName = "{sample}"
     message:
         "mapping reads to genome to bam files."
-#    conda:
-#        "envs/hisat2_mapping.yaml"
     threads: 10
     run:
         if sample_is_single_end(params.sampleName):
@@ -222,18 +218,16 @@ rule DESeq2_analysis:
 # combine differential expressions with hypothetical gene-functions
 rule results_function:
     input:
-        fa    = WORKING_DIR + "genome/stringtie_transcriptome.fasta",
-        blast = WORKING_DIR + "results/stringtie_transcriptome_blast.txt",
         clusts= WORKING_DIR + "results/clusters.txt",
         deseq = RESULT_DIR + "result.csv"
     output:
         final = RESULT_DIR + "final.txt"
     params:
+        annos = config["annotations"]
         path  = WORKING_DIR + "mapped/"
     shell:
         "python scripts/DE_with_Function.py "
-        "-f {input.fa} "
-        "-b {input.blast} "
+        "-a {input.annos} "
         "-c {input.clusts} "
         "-r {input.deseq} "
         "-o {output.final} "
