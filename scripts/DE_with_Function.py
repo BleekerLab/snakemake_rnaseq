@@ -1,5 +1,6 @@
 from optparse import OptionParser 
 import glob
+import os
 
 # get the command line arguments
 parser = OptionParser(description="Script that combines the normalized and differential expression data as outputted by DESeq2.R, the clusters as outputted by plotscript.R and the results from the blast against the reference proteome. Resulting in a combined tab-delimeted data file")
@@ -45,7 +46,12 @@ clusts.close()
 
 # if there is an annotation file available add annotaions.
 if options.anno_file in glob.glob(options.anno_file):
-    fa = open(options.anno_file, "r")
+    if glob.glob(options.anno_file)[0].endswith(".gz"):
+        os.system(f"gunzip {options.anno_file}")
+        annoFile = ".".join(options.anno_file.split(".")[:-1])
+    else:
+        annoFile = options.anno_file
+    fa = open(annoFile, "r")
     annos = {}
     count = 0
     for l in fa:
