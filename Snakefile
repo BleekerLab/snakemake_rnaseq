@@ -19,6 +19,8 @@ RESULT_DIR = config["result_dir"]
 genome_url = config["refs"]["genome"]
 transcriptome_gtf_url= config["refs"]["transcriptome_gtf"]
 
+functional_annotation = config["refs"]["annotation"]
+
 ########################
 # Samples and conditions
 ########################
@@ -223,7 +225,7 @@ rule results_function:
     output:
         final = RESULT_DIR + "final.txt"
     params:
-        annos = config["annotations"]
+        annos = functional_annotation
         path  = WORKING_DIR + "mapped/"
     shell:
         "python scripts/DE_with_Function.py "
