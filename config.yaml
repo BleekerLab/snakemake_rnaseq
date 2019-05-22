@@ -13,6 +13,8 @@ refs:
     "ftp://ftp.solgenomics.net/genomes/Petunia_axillaris/annotation/Petunia_axillaris_v1.6.2_proteins.fasta"
   transcriptome_gtf:
     "ftp://ftp.solgenomics.net/genomes/Petunia_axillaris/annotation/Petunia_axillaris_v1.6.2_gene_models.gff"
+  annotation:
+    "annotations/Petunia_axillaris_v1.6.2_proteins.mapman_annotation.txt.gz"
 
 ### Software parameters
 fastp:
