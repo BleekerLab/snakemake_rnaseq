@@ -167,6 +167,8 @@ rule hisat_mapping:
     params:
         indexName = WORKING_DIR + "genome/genome",
         sampleName = "{sample}"
+    # conda:
+    #     "envs/hisat_mapping.yaml"        
     message:
         "mapping reads to genome to bam files."
     threads: 10
@@ -251,8 +253,6 @@ rule filter_for_plots:
         minimum_foldchange =  float(config["filter_for_plots"]["minimum_foldchange"]),
         maximum_pvalue     =  float(config["filter_for_plots"]["maximum_pvalue"]),
         average_samples    =  str(config["filter_for_plots"]["average_samples"])
-    conda:
-        "envs/filter_for_plots.yaml"
     shell:
         "python scripts/filterForPlots.py "
         "-i {input.result} "
