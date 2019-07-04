@@ -47,20 +47,20 @@ def sample_is_single_end(sample):
         return pd.isnull(samples.loc[(sample), "fq2"])
 
 def get_fastq(wildcards):
-	""" This function checks if the sample has paired end or single end reads
-	and returns 1 or 2 names of the fastq files """
-	if sample_is_single_end(wildcards.sample):
-		return samples.loc[(wildcards.sample), ["fq1"]].dropna()
-	else:
-		return samples.loc[(wildcards.sample), ["fq1", "fq2"]].dropna()
+    """ This function checks if the sample has paired end or single end reads
+    and returns 1 or 2 names of the fastq files """
+    if sample_is_single_end(wildcards.sample):
+        return samples.loc[(wildcards.sample), ["fq1"]].dropna()
+    else:
+        return samples.loc[(wildcards.sample), ["fq1", "fq2"]].dropna()
 
 def get_trimmed(wildcards):
-	""" This function checks if sample is paired end or single end
-	and returns 1 or 2 names of the trimmed fastq files """
-	if sample_is_single_end(wildcards.sample):
-		return WORKING_DIR + "trimmed/" + wildcards.sample + "_R1_trimmed.fq.gz"
-	else:
-		return [WORKING_DIR + "trimmed/" + wildcards.sample + "_R1_trimmed.fq.gz", WORKING_DIR + "trimmed/" + wildcards.sample + "_R2_trimmed.fq.gz"]
+    """ This function checks if sample is paired end or single end
+    and returns 1 or 2 names of the trimmed fastq files """
+    if sample_is_single_end(wildcards.sample):
+        return WORKING_DIR + "trimmed/" + wildcards.sample + "_R1_trimmed.fq.gz"
+    else:
+        return [WORKING_DIR + "trimmed/" + wildcards.sample + "_R1_trimmed.fq.gz", WORKING_DIR + "trimmed/" + wildcards.sample + "_R2_trimmed.fq.gz"]
 
 
 #################
@@ -73,7 +73,8 @@ rule all:
         RESULT_DIR + "result.csv",
         RESULT_DIR + "plotSelection.txt",
         clusts = WORKING_DIR + "results/clusters.txt",
-        plots  = RESULT_DIR + "plots.pdf"
+        plots  = RESULT_DIR + "plots.pdf",
+        final = RESULT_DIR + "final.txt"
     message:
         "Job done! Removing temporary directory"
 
@@ -131,14 +132,13 @@ rule fastp:
             --qualified_quality_phred {params.qualified_quality_phred} \
             --in1 {input} --out1 {output} \
             2> {log}; \
-			touch {output.fq2}")
+            touch {output.fq2}")
         else:
             shell("fastp --thread {threads}  --html {output.html} \
             --qualified_quality_phred {params.qualified_quality_phred} \
             --detect_adapter_for_pe \
             --in1 {input[0]} --in2 {input[1]} --out1 {output.fq1} --out2 {output.fq2}; \
             2> {log}")
-
 #########################
 # RNA-Seq read alignement
 #########################
@@ -225,11 +225,11 @@ rule results_function:
     output:
         final = RESULT_DIR + "final.txt"
     params:
-        annos = functional_annotation
+        annos = functional_annotation,
         path  = WORKING_DIR + "mapped/"
     shell:
         "python scripts/DE_with_Function.py "
-        "-a {input.annos} "
+        "-a {params.annos} "
         "-c {input.clusts} "
         "-r {input.deseq} "
         "-o {output.final} "
@@ -276,8 +276,8 @@ rule make_plots:
         height_in_dendrogram = float(config["make_plots"]["height_in_dendrogram"]),
         membership_min       = float(config["make_plots"]["membership_min"]),
         colour_of_heatmap    = str(config["make_plots"]["colour_of_heatmap"])
-    conda:
-        "envs/plotsmaker.yaml"
+    #conda:
+     #   "envs/plotsmaker.yaml"
     shell:
         "Rscript scripts/plotscript.R "
         "-i {input} "
