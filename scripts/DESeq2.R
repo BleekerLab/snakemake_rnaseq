@@ -75,7 +75,7 @@ volcanoplot <- function (res, lfcthresh=2, sigthresh=0.05, main="Volcano Plot", 
 }
 
 # open file that will be containing a vulcano plot for each of the combinations of conditions
-pdf(file="vulcanoplots.pdf")
+#pdf(file="vulcanoplots.pdf")
 
 # iterate through the list of conditions to create differential expression (DE) values for all possible pairs
 x <- 1
@@ -87,7 +87,7 @@ for(i in levels(condition)){
       d <- paste(i, levels(condition)[j], sep="&")                                                # paste the two conditions in one character, to be used as the pair name
       resP <- as.data.frame(table(res$padj<0.05))                                                 # get number of DE values with P-value < 0.05
       if(resP[1,2]< opt$maxfraction*nrow(resdata)){                                               # only continue with the pair if it is less then the maximum fraction(set by user in commandline) differentially expressed 
-        volcanoplot(res, lfcthresh=1, sigthresh=0.05, textcx=.8, xlim=c(-10, 10), main=d)
+        #volcanoplot(res, lfcthresh=1, sigthresh=0.05, textcx=.8, xlim=c(-10, 10), main=d)
         print(c(d,"Number of differentials is within accepted limit"))
         colnames(res) = paste(d,c(colnames(res)),sep = "-")                                       # paste the pair name to the column name
         resdata <- merge(as.data.frame(resdata), as.data.frame(res), by="row.names", sort=FALSE)  # merge the DE values to the matrix
@@ -100,7 +100,7 @@ for(i in levels(condition)){
     }
   }
 }
-dev.off()
+#dev.off()
 # create first column containing the genenames.
 resdata$genes <- rownames(resdata)
 resdata <- merge(as.data.frame(resdata["genes"]), as.data.frame(resdata[,2:ncol(resdata)-1]), by="row.names", sort=FALSE)

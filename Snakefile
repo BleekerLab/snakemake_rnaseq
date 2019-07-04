@@ -251,8 +251,8 @@ rule filter_for_plots:
         minimum_foldchange =  float(config["filter_for_plots"]["minimum_foldchange"]),
         maximum_pvalue     =  float(config["filter_for_plots"]["maximum_pvalue"]),
         average_samples    =  str(config["filter_for_plots"]["average_samples"])
-    #conda:
-        #"envs/filter_for_plots.yaml"
+    conda:
+        "envs/filter_for_plots.yaml"
     shell:
         "python scripts/filterForPlots.py "
         "-i {input.result} "
@@ -276,8 +276,8 @@ rule make_plots:
         height_in_dendrogram = float(config["make_plots"]["height_in_dendrogram"]),
         membership_min       = float(config["make_plots"]["membership_min"]),
         colour_of_heatmap    = str(config["make_plots"]["colour_of_heatmap"])
-    #conda:
-     #   "envs/plotsmaker.yaml"
+    conda:
+        "envs/plotsmaker.yaml"
     shell:
         "Rscript scripts/plotscript.R "
         "-i {input} "
