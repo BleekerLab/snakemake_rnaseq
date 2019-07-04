@@ -1,8 +1,8 @@
 # You can use this file to create a conda environment for this pipeline:
 #   conda env create -f environment.yml
 channels:
+  - conda-forge
   - bioconda
-#  - conda-forge
   - defaults
 dependencies:
   - r-gplots=3.0.1
