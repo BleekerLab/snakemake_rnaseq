@@ -68,13 +68,13 @@ def get_trimmed(wildcards):
 #################
 rule all:
     input:
-        expand(WORKING_DIR + "mapped/{sample}.bam", sample = SAMPLES),
+        #expand(WORKING_DIR + "mapped/{sample}.bam", sample = SAMPLES),
         RESULT_DIR + "counts.txt",
         RESULT_DIR + "result.csv",
         RESULT_DIR + "plotSelection.txt",
-        clusts = WORKING_DIR + "results/clusters.txt",
-        plots  = RESULT_DIR + "plots.pdf",
-        final = RESULT_DIR + "final.txt"
+        #clusts = WORKING_DIR + "results/clusters.txt",
+        #plots  = RESULT_DIR + "plots.pdf",
+        #final = RESULT_DIR + "final.txt"
     message:
         "Job done! Removing temporary directory"
 
@@ -168,7 +168,7 @@ rule hisat_mapping:
         indexName = WORKING_DIR + "genome/genome",
         sampleName = "{sample}"
     # conda:
-    #     "envs/hisat_mapping.yaml"        
+    #     "envs/hisat_mapping.yaml"
     message:
         "mapping reads to genome to bam files."
     threads: 10
