@@ -8,6 +8,7 @@ result_dir: "results/"
 ### Genome and annotations
 refs:
   genome:
+<<<<<<< HEAD
     "ftp://ftp.solgenomics.net/genomes/Petunia_axillaris/assembly/Petunia_axillaris_v1.6.2_genome.fasta"
   proteins_fasta:
     "ftp://ftp.solgenomics.net/genomes/Petunia_axillaris/annotation/Petunia_axillaris_v1.6.2_proteins.fasta"
@@ -15,6 +16,13 @@ refs:
     "ftp://ftp.solgenomics.net/genomes/Petunia_axillaris/annotation/Petunia_axillaris_v1.6.2_gene_models.gff"
   annotation:
     "annotations/Petunia_axillaris_v1.6.2_proteins.mapman_annotation.txt.gz"
+=======
+        ftp://ftp.solgenomics.net/genomes/Petunia_axillaris/assembly/Petunia_axillaris_v1.6.2_genome.fasta
+  proteins_fasta:
+        "ftp://ftp.solgenomics.net/genomes/Petunia_axillaris/annotation/Petunia_axillaris_v1.6.2_proteins.fasta"
+  transcriptome_gtf:
+        "ftp://ftp.solgenomics.net/genomes/Petunia_axillaris/annotation/Petunia_axillaris_v1.6.2_gene_models.gff"
+>>>>>>> parent of fe9b7b0... Added tomato genome fasta, transcriptome gff and proteome fasta
 
 ### Software parameters
 fastp:
