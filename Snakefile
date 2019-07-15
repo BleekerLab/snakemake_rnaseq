@@ -92,8 +92,8 @@ rule get_genome_fasta:
         WORKING_DIR + "genome/genome.fasta"
     message:
         "downloading the required genomic fasta file"
-    conda:
-        "envs/wget.yaml"
+    #conda:
+    #    "envs/wget.yaml"
     shell:
         "wget -O {output} {genome_url}"
 
@@ -102,8 +102,8 @@ rule get_transcriptome_gtf:
         WORKING_DIR + "genome/ref_transcriptome.gff"
     message:
         "downloading required transcriptome gtf file"
-    conda:
-        "envs/wget.yaml"
+    #conda:
+    #    "envs/wget.yaml"
     shell:
         "wget -O {output} {transcriptome_gtf_url}"
 
