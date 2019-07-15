@@ -9,3 +9,4 @@ dependencies:
   - hisat2=2.1.0
   - samtools=1.9.0
   - fastp=0.19.5
+  - wget=1.20.1
