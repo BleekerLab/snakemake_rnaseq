@@ -50,6 +50,10 @@ The Snakefile will then take care of installing and loading the packages and sof
 3. Run the pipeline on your system with:
 ` docker run --mount source=<data folder on host machine>,target=<folder inside container that will corresponds to data folder> mgalland/rnaseq Snakemake --use-conda --cores N`.
 
+For instance, in a Shell window, go inside the `Snakemake_hisat-DESeq` directory and type: `docker run -it -v $PWD:/rnaseq mgalland/snakemake /bin/bash`.  
+This will link your working directory (`Snakemake_hisat-DESeq`) to a directory called `/rnaseq` inside the container. Then, the ` -it` option will have you to enter the container where you can run Snakemake commands and retrieve your data folder.    
+Finally, to export your results outside of the container, you can use the Docker `cp` command. See it there: https://docs.docker.com/engine/reference/commandline/cp/.
+
 # Usage (HPC cluster)
 singularity + docker image
 
