@@ -1,3 +1,4 @@
+name: rnaseq
 channels:
   - conda-forge
   - bioconda
