@@ -6,3 +6,7 @@ dependencies:
   - python=3.6
   - pandas=0.23
   - snakemake=5.3.0
+  - hisat2=2.1.0
+  - samtools=1.9.0
+  - fastp=0.19.5
+  - wget=1.20.1

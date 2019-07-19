@@ -1,0 +1,8 @@
+channels:
+  - bioconda
+  - defaults
+dependencies:
+  - bioconductor-deseq2=1.20.0
+  - r-gplots=3.0.1
+  - r-calibrate=1.7.2
+  - r-optparse
