@@ -20,12 +20,15 @@ The raw fastq files will be trimmed for adaptors and quality checked with `fastp
 
 # Content of the github repository
 - `Snakefile`: a master file that contains the desired outputs and the rules to generate them from the input files.
-- `config.yaml`: the configuration files making the Snakefile adaptable to any input files, genome and parameter for the rules.
-- `data/`: a folder containing samples.txt (sample descriptions) and subsetted paired-end fastq files used to test locally the pipeline. Generated using [Seqtk](https://github.com/lh3/seqtk):
+- `config/samples.tsv`:  a file containing information about the names, the paths and the conditions of the samples used as input for the pipeline. **This file has to be adapted to your sample names before running the pipeline**.
+- `config/config.yaml`: the configuration files making the Snakefile adaptable to any input files, genome and parameter for the rules.
+- `config/refs/`: a folder containing
+  - a genomic reference in fasta format. The `S_lycopersicum_chromosomes.4.00.chrom1.fa` is placed for testing purposes.
+  - a GTF annotation file. The `ITAG4.0_gene_models.sub.gtf` for testing purposes.
+- `fastq/`: a folder containing subsetted paired-end fastq files used to test locally the pipeline. Generated using [Seqtk](https://github.com/lh3/seqtk):
 `seqtk sample -s100 {inputfile(can be gzipped)} 250000 > {output(always gunzipped)}`
 This folder should contain the `fastq` of the paired-end RNA-seq data, you want to run.
 - `envs/`: a folder containing the environments needed for the conda package manager. If run with the `--use-conda` command, Snakemake will install the necessary softwares and packages using the conda environment files.
-- `samples.tsv`:  a file containing information about the names, the paths and the conditions of the samples used as input for the pipeline. **This file has to be adapted to your sample names before running the pipeline**.
 - `Dockerfile`: a Docker file used to build the docker image that, once run using `docker run rnaseq:dockerfile Snakemake --cores N --use-conda` will trigger installation of the necessary softwares and run the Snakemake pipeline.
 
 
@@ -60,7 +63,7 @@ Finally, to export your results outside of the container, you can use the Docker
 singularity + docker image
 
 ## Configuration file
-Make sure you have changed the parameters in the `config.yaml` file that specifies where to find the sample data file, the genomic and transcriptomic reference fasta files to use and the parameters for certains rules etc.  
+Make sure you have changed the parameters in the `config/config.yaml` file that specifies where to find the sample data file, the genomic and transcriptomic reference fasta files to use and the parameters for certains rules etc.  
 This file is used so the `Snakefile` does not need to be changed when locations or parameters need to be changed.
 
 ## Snakemake execution
@@ -74,13 +77,8 @@ Simply type `Snakemake --use-conda` and provide the number of cores with `--core
 For cluster execution, please refer to the [Snakemake reference](https://snakemake.readthedocs.io/en/stable/executable.html#cluster-execution).
 
 # Main outputs
-- the RNA-Seq read alignment files __*.bam__
-- the fastqc report files __\*.html__
+- the fastp report files __\*.html__
 - the unscaled RNA-Seq read counts: __counts.txt__
-- the differential expression file __results.tsv__
-
-- the combined results file __final.txt__
-
 
 # Directed Acyclic Graph of jobs
 ![dag](./dag.png)

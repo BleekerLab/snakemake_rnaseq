@@ -4,12 +4,12 @@ result_dir:  results/ # will be kept
 working_dir: temp/   # will be removed (temporary files)
 
 # samples to condition
-units: samples.tsv
+units: config/samples.tsv
 
 # refs 
 refs:
-  genome:  "refs/S_lycopersicum_chromosomes.4.00.chrom1.fa" # chromosome 1
-  gff:     "refs/ITAG4.0_gene_models.sub.gtf" 
+  genome:  "config/refs/S_lycopersicum_chromosomes.4.00.chrom1.fa" # chromosome 1
+  gff:     "config/refs/ITAG4.0_gene_models.sub.gtf" 
 
 
 deseq2:
