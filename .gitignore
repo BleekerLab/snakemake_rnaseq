@@ -6,3 +6,4 @@ logs/
 *.snakemake
 temp/
 *.json
+fastq/

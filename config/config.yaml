@@ -1,0 +1,35 @@
+---
+# directories
+result_dir:  results/ # will be kept
+working_dir: temp/   # will be removed (temporary files)
+
+# samples to condition
+units: config/samples.tsv
+
+# refs 
+refs:
+  genome:  "config/refs/S_lycopersicum_chromosomes.4.00.chrom1.fa" # chromosome 1
+  gff:     "config/refs/ITAG4.0_gene_models.sub.gtf" 
+
+
+deseq2:
+  maxfraction: "0.7"
+
+fastp:
+  qualified_quality_phred: 15
+
+
+
+trimmomatic:
+  LeadMinTrimQual: "3"
+  TrailMinTrimQual: "3"
+  adapters: adapters.fasta
+  avgMinQual: "15"
+  minReadLength: "40"
+  palindromeClipTreshold: "30"
+  phred: "-phred33"
+  seedMisMatches: "2"
+  simpleClipThreshold: "10"
+  windowSize: "4"
+
+

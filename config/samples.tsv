@@ -1,0 +1,3 @@
+sample	fq1	fq2
+Cultivar-01	fastq/Cultivar-01_R1.sub.fastq	fastq/Cultivar-01_R2.sub.fastq
+Cultivar-02	fastq/Cultivar-02_R1.sub.fastq	fastq/Cultivar-02_R2.sub.fastq
