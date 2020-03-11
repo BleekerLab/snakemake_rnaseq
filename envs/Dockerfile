@@ -19,6 +19,5 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86
 
 RUN conda env create -f /tmp/environment.yml
 
-RUN echo "conda activate counts" >> ~/.bashrc
-
-CMD [ "/bin/bash" ]
+RUN CONDA_ENV=$(head -n 1 environment.yaml |cut -d":" -f 2|xargs) 
+RUN echo "conda activate $CONDA_ENV" >> ~/.bashrc
