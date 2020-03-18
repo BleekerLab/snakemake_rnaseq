@@ -1,8 +1,8 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2393540.svg)](https://doi.org/10.5281/zenodo.2393540)
+# RNA-seq analysis pipeline
 
-# RNA_seq_Snakemake
-A snakemake pipeline for the analysis of RNA-seq data
-[![Snakemake](https://img.shields.io/badge/snakemake-≥5.2.0-brightgreen.svg)](https://snakemake.bitbucket.io)  
+A snakemake pipeline for the analysis of RNA-seq data.  
+
+[![Snakemake](https://img.shields.io/badge/snakemake-≥5.2.0-brightgreen.svg)](https://snakemake.bitbucket.io)    
 [![Miniconda](https://img.shields.io/badge/miniconda-blue.svg)](https://conda.io/miniconda)
 
 # Description
