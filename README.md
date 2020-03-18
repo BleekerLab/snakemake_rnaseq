@@ -1,25 +1,24 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2393540.svg)](https://doi.org/10.5281/zenodo.2393540)
 
 # RNA_seq_Snakemake
-A snakemake pipeline for the analysis of RNA-seq data that makes use of [hisat2](https://ccb.jhu.edu/software/hisat2/index.shtml) and [DESeq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html).  
-
+A snakemake pipeline for the analysis of RNA-seq data
 [![Snakemake](https://img.shields.io/badge/snakemake-≥5.2.0-brightgreen.svg)](https://snakemake.bitbucket.io)  
 [![Miniconda](https://img.shields.io/badge/miniconda-blue.svg)](https://conda.io/miniconda)
 
 # Description
 
 ## Aim
-To align, count, normalize counts and compute gene differential expressions between conditions using paired-end Illumina RNA-seq data.
+To align, count and normalize counts using single or paired-end Illumina RNA-seq data.
 
 ## Description
 This pipeline analyses the raw RNA-seq data and produces two files containing the raw and normalized counts. 
 
 1. The raw fastq files will be trimmed for adaptors and quality checked with `fastp`.  
-2. The genome sequence FASTA file will be used for the mapping step of the trimmed reads using `hisat2`. 
+2. The genome sequence FASTA file will be used for the mapping step of the trimmed reads using `STAR`. 
 3. A GTF annotation file will be used to obtain the raw counts using `subread featureCounts`. 
 4. The raw counts will be scaled using `DESeq2` to generate the scaled ("normalized") counts. 
 
-## Prerequisites: what you should be able to do before using this pipeline
+## Prerequisites: what you should know before using this pipeline
 - Some command of the Unix Shell to connect to a remote server where you will execute the pipeline (e.g. SURF Lisa Cluster). You can find a good tutorial from the Software Carpentry Foundation [here](https://swcarpentry.github.io/shell-novice/) and another one from Berlin Bioinformatics [here](http://bioinformatics.mdc-berlin.de/intro2UnixandSGE/unix_for_beginners/README.html).
 - Some command of the Unix Shell to transfer datasets to and from a remote server (to transfer sequencing files and retrieve the results/). The Berlin Bioinformatics Unix begginer guide available [here] should be sufficient for that (check the `wget` and `scp` commands).
 - An understanding of the steps of a canonical RNA-Seq analysis (trimming, alignment, etc.). You can find some info [here](https://bitesizebio.com/13542/what-everyone-should-know-about-rna-seq/).
@@ -36,6 +35,14 @@ This pipeline analyses the raw RNA-seq data and produces two files containing th
 This folder should contain the `fastq` of the paired-end RNA-seq data, you want to run.
 - `envs/`: a folder containing the environments needed for the conda package manager. If run with the `--use-conda` command, Snakemake will install the necessary softwares and packages using the conda environment files.
 - `Dockerfile`: a Docker file used to build the docker image that, once run using `docker run rnaseq:dockerfile Snakemake --cores N --use-conda` will trigger installation of the necessary softwares and run the Snakemake pipeline.
+
+
+## Pipeline depencies
+* [Snakemake](https://snakemake.readthedocs.io/en/stable/)
+* [fastp](https://github.com/OpenGene/fastp)
+* [STAR](https://github.com/alexdobin/STAR)   
+* [subread](http://subread.sourceforge.net/)  
+* [DESeq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html).  
 
 
 # Usage (local machine)
@@ -89,8 +96,6 @@ For cluster execution, please refer to the [Snakemake reference](https://snakema
 
 # Usage (HPC cluster)
 singularity + docker image
-
-
 
 
 # Directed Acyclic Graph of jobs
