@@ -120,13 +120,13 @@ rule fastp:
         qualified_quality_phred = config["fastp"]["qualified_quality_phred"]
     run:
         if sample_is_single_end(params.sampleName):
-            shell("fastp --thread {threads}  --html {output.html} \
+            shell("fastp --thread {threads}  --html {output.html} --json {output.json} \
             --qualified_quality_phred {params.qualified_quality_phred} \
             --in1 {input} --out1 {output} \
             2> {log}; \
             touch {output.fq2}")
         else:
-            shell("fastp --thread {threads}  --html {output.html} \
+            shell("fastp --thread {threads}  --html {output.html} --json {output.json} \
             --qualified_quality_phred {params.qualified_quality_phred} \
             --detect_adapter_for_pe \
             --in1 {input[0]} --in2 {input[1]} --out1 {output.fq1} --out2 {output.fq2}; \
