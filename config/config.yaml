@@ -8,28 +8,31 @@ units: config/samples.tsv
 
 # refs 
 refs:
-  genome:  "config/refs/S_lycopersicum_chromosomes.4.00.chrom1.fa" # chromosome 1
+  genome:  "config/refs/S_lycopersicum_chromosomes.4.00.chrom1.fa" 
   gff:     "config/refs/ITAG4.0_gene_models.sub.gtf" 
 
 
-deseq2:
-  maxfraction: "0.7"
-
+# read quality trimming
 fastp:
-  qualified_quality_phred: 15
+  qualified_quality_phred: 30 # Phred+33 score (> 15 for Proton Ion, > 30 or more for Illumina) 
 
 
+######
+# STAR
+######
 
-trimmomatic:
-  LeadMinTrimQual: "3"
-  TrailMinTrimQual: "3"
-  adapters: adapters.fasta
-  avgMinQual: "15"
-  minReadLength: "40"
-  palindromeClipTreshold: "30"
-  phred: "-phred33"
-  seedMisMatches: "2"
-  simpleClipThreshold: "10"
-  windowSize: "4"
+# genome index step
+star_index:
+  sjdbOverhang: 100 # as recommended in STAR manual https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf
 
+# alignment step
+star:
+  samtype:                'BAM SortedByCoordinate' # type of output
+  mismatches:             '2'                      # alignment will be output only if it has less mismatches than this number
+  unmapped:               'None'                   # 'None' or 'Fastx' (to output fastq files of unmapped reads)
+  multimappers:           '10'                     # N number of loci the read is allowed to map to
+  matchminoverlengthread: '0.66'                   # alignment will be output if percentage of read length is higher than this value (66% of 2x100bp = 132 nucleotides) 
+  intronmax:              '25000'                  # max intron in tomato genome is 22,729
+  matesgap:               '20000'                  # max length between mates 
+  samattributes:          'NH HI AS nM MD'         # SAM attributes (by default only NH HI AS nM). See STAR manual
 

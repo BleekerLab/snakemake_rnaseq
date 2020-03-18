@@ -74,9 +74,34 @@ rule all:
 #######
 
 
-##########
-# trimming
-##########
+###########################
+# Genome reference indexing
+###########################
+
+rule star_index:
+    input:
+        fasta = config["refs"]["genome"],
+        gff =   config["refs"]["gff"]
+    output:
+         genome_index = [WORKING_DIR + "genome/" + f for f in ["chrLength.txt","chrNameLength.txt","chrName.txt","chrStart.txt","Genome","genomeParameters.txt","SA","SAindex"]]
+    message:
+        "generating STAR genome index"
+    params:
+        genome_dir = WORKING_DIR + "genome/",
+        sjdb_overhang = config["star_index"]["sjdbOverhang"]
+    threads: 10
+    shell:
+        "mkdir -p {params.genome_dir}; " # if directory not created STAR will ask for it
+        "STAR --runThreadN {threads} "
+        "--runMode genomeGenerate "
+        "--genomeDir {params.genome_dir} "
+        "--genomeFastaFiles {input.fasta} "
+        "--sjdbGTFfile {input.gff} "
+        "--sjdbOverhang {params.sjdb_overhang}"
+
+#######################
+# RNA-seq read trimming
+#######################
 
 rule fastp:
     input:
@@ -84,7 +109,8 @@ rule fastp:
     output:
         fq1  = WORKING_DIR + "trimmed/" + "{sample}_R1_trimmed.fq.gz",
         fq2  = WORKING_DIR + "trimmed/" + "{sample}_R2_trimmed.fq.gz",
-        html = RESULT_DIR + "fastp/{sample}.html"
+        html = RESULT_DIR + "fastp/{sample}.html",
+        json = RESULT_DIR + "fastp/{sample}.json"
     message:"trimming {wildcards.sample} reads"
     threads: 10
     log:
@@ -106,46 +132,50 @@ rule fastp:
             --in1 {input[0]} --in2 {input[1]} --out1 {output.fq1} --out2 {output.fq2}; \
             2> {log}")
 
+
+
 #########################
 # RNA-Seq read alignement
 #########################
 
-rule index:
+rule map_to_genome_using_STAR:
     input:
-        config["refs"]["genome"]
+        genome_index = rules.star_index.output,
+        forward = WORKING_DIR + "trimmed/" + "{sample}_R1_trimmed.fq.gz",
+        reverse = WORKING_DIR + "trimmed/" + "{sample}_R2_trimmed.fq.gz"
     output:
-        [WORKING_DIR + "genome/genome." + str(i) + ".ht2" for i in range(1,9)]
+        temp(RESULT_DIR + "star/{sample}_Aligned.sortedByCoord.out.bam"),
+        RESULT_DIR +      "star/{sample}_Log.final.out",
     message:
-        "indexing genome"
+        "mapping {wildcards.sample} reads to genome"
     params:
-        WORKING_DIR + "genome/genome"
+        prefix = RESULT_DIR + "star/{sample}_",
+        maxmismatches = config["star"]["mismatches"],
+        unmapped = config["star"]["unmapped"]   ,
+        multimappers = config["star"]["multimappers"],
+        matchNminoverLread = config["star"]["matchminoverlengthread"],
+        outSamType = config["star"]["samtype"],
+        outSAMattributes = config["star"]["samattributes"],
+        intronmax = config["star"]["intronmax"],
+        matesgap =  config["star"]["matesgap"],
+        genome_index = WORKING_DIR + "genome/"
     threads: 10
     shell:
-        "hisat2-build -p {threads} {input} {params} --quiet"
+        "STAR --genomeDir {params.genome_index} "
+        "--readFilesIn {input.forward} {input.reverse} "
+        "--readFilesCommand zcat "
+        "--outFilterMultimapNmax {params.multimappers} "
+        "--outFilterMismatchNmax {params.maxmismatches} "
+        "--alignMatesGapMax {params.matesgap} "
+        "--alignIntronMax {params.intronmax} "
+        "--outFilterMatchNminOverLread {params.matchNminoverLread} "
+        "--alignEndsType EndToEnd "
+        "--runThreadN {threads} "
+        "--outReadsUnmapped {params.unmapped} "
+        "--outFileNamePrefix {params.prefix} "
+        "--outSAMtype {params.outSamType} "
+        "--outSAMattributes {params.outSAMattributes} "
 
-rule hisat_mapping:
-    input:
-        get_trimmed,
-        indexFiles = [WORKING_DIR + "genome/genome." + str(i) + ".ht2" for i in range(1,9)]
-    output:
-        bams  = WORKING_DIR + "mapped/{sample}.bam",
-        sum   = RESULT_DIR + "logs/{sample}_sum.txt",
-        met   = RESULT_DIR + "logs/{sample}_met.txt"
-    params:
-        indexName = WORKING_DIR + "genome/genome",
-        sampleName = "{sample}"
-    # conda:
-    #     "envs/hisat_mapping.yaml"
-    message:
-        "mapping reads to genome to bam files."
-    threads: 10
-    run:
-        if sample_is_single_end(params.sampleName):
-            shell("hisat2 -p {threads} --summary-file {output.sum} --met-file {output.met} -x {params.indexName} \
-            -U {input} | samtools view -Sb -F 4 -o {output.bams}")
-        else:
-            shell("hisat2 -p {threads} --summary-file {output.sum} --met-file {output.met} -x {params.indexName} \
-            -1 {input[0]} -2 {input[1]} | samtools view -Sb -F 4 -o {output.bams}")
 
 
 
@@ -155,7 +185,7 @@ rule hisat_mapping:
 
 rule create_counts_table:
     input:
-        bams = expand(WORKING_DIR + "mapped/{sample}.bam", sample = SAMPLES),
+        bams = expand(RESULT_DIR + "star/{sample}_Aligned.sortedByCoord.out.bam", sample = SAMPLES),
         gff  = config["refs"]["gff"]
     output:
         RESULT_DIR + "counts.txt"
