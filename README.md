@@ -1,11 +1,11 @@
 # RNA-seq analysis pipeline
 
-A snakemake pipeline for the analysis of RNA-seq data.  
-
 [![Snakemake](https://img.shields.io/badge/snakemake-≥5.2.0-brightgreen.svg)](https://snakemake.bitbucket.io)    
 [![Miniconda](https://img.shields.io/badge/miniconda-blue.svg)](https://conda.io/miniconda)
 
 # Description
+
+A snakemake pipeline for the analysis of RNA-seq data.  
 
 ## Aim
 To align, count and normalize counts using single or paired-end Illumina RNA-seq data.
