@@ -5,7 +5,7 @@
 
 # Description
 
-A snakemake pipeline for the analysis of RNA-seq data.  
+A snakemake pipeline for the analysis of RNA-seq data. It processes RNA-seq fastq files and delivers a raw and a normalised count tables.
 
 ## Aim
 To align, count and normalize counts using single or paired-end Illumina RNA-seq data.
@@ -18,6 +18,16 @@ This pipeline analyses the raw RNA-seq data and produces two files containing th
 3. A GTF annotation file will be used to obtain the raw counts using `subread featureCounts`. 
 4. The raw counts will be scaled using `DESeq2` to generate the scaled ("normalized") counts. 
 
+## Input files
+* __RNA-seq fastq files__ as listed in the `config/samples.tsv` file.
+* __A genomic reference in FASTA format__. For instance, a fasta file containing the 12 chromosomes of tomato (*Solanum lycopersicum*).
+* __A genome annotation file in the [GTF format](https://useast.ensembl.org/info/website/upload/gff.html)__. You can convert a GFF annotation file format into GTF with the [gffread program from Cufflinks](http://ccb.jhu.edu/software/stringtie/gff.shtml): `gffread my.gff3 -T -o my.gtf`.
+
+## Output files
+* A table of raw counts: this table can be used to perform a differential gene expression analysis with DESeq2. 
+* A table of DESeq2-normalised counts: this table can be used to perform an Exploratory Data Analysis with a PCA, heatmaps, sample clustering, etc.
+* fastp QC reports (one per fastq file).
+
 ## Prerequisites: what you should know before using this pipeline
 - Some command of the Unix Shell to connect to a remote server where you will execute the pipeline (e.g. SURF Lisa Cluster). You can find a good tutorial from the Software Carpentry Foundation [here](https://swcarpentry.github.io/shell-novice/) and another one from Berlin Bioinformatics [here](http://bioinformatics.mdc-berlin.de/intro2UnixandSGE/unix_for_beginners/README.html).
 - Some command of the Unix Shell to transfer datasets to and from a remote server (to transfer sequencing files and retrieve the results/). The Berlin Bioinformatics Unix begginer guide available [here] should be sufficient for that (check the `wget` and `scp` commands).
@@ -25,7 +35,7 @@ This pipeline analyses the raw RNA-seq data and produces two files containing th
 
 ## Content of this GitHub repository
 - `Snakefile`: a master file that contains the desired outputs and the rules to generate them from the input files.
-- `config/samples.tsv`:  a file containing information about the names, the paths and the conditions of the samples used as input for the pipeline. **This file has to be adapted to your sample names before running the pipeline**.
+- `config/samples.tsv`:  a file containing sample names and the paths to the forward and eventually reverse reads (if paired-end). **This file has to be adapted to your sample names before running the pipeline**.
 - `config/config.yaml`: the configuration files making the Snakefile adaptable to any input files, genome and parameter for the rules.
 - `config/refs/`: a folder containing
   - a genomic reference in fasta format. The `S_lycopersicum_chromosomes.4.00.chrom1.fa` is placed for testing purposes.
@@ -35,6 +45,7 @@ This pipeline analyses the raw RNA-seq data and produces two files containing th
 This folder should contain the `fastq` of the paired-end RNA-seq data, you want to run.
 - `envs/`: a folder containing the environments needed for the conda package manager. If run with the `--use-conda` command, Snakemake will install the necessary softwares and packages using the conda environment files.
 - `Dockerfile`: a Docker file used to build the docker image that, once run using `docker run rnaseq:dockerfile Snakemake --cores N --use-conda` will trigger installation of the necessary softwares and run the Snakemake pipeline.
+
 
 
 ## Pipeline depencies
