@@ -90,7 +90,8 @@ rule star_index:
         "generating STAR genome index"
     params:
         genome_dir = WORKING_DIR + "genome/",
-        sjdb_overhang = config["star_index"]["sjdbOverhang"]
+        sjdb_overhang = config["star_index"]["sjdbOverhang"],
+        limit_genome_generate_ram = config["star"]["limitGenomeGenerateRAM"]
     threads: 10
     shell:
         "mkdir -p {params.genome_dir}; " # if directory not created STAR will ask for it
@@ -99,7 +100,8 @@ rule star_index:
         "--genomeDir {params.genome_dir} "
         "--genomeFastaFiles {input.fasta} "
         "--sjdbGTFfile {input.gff} "
-        "--sjdbOverhang {params.sjdb_overhang}"
+        "--sjdbOverhang {params.sjdb_overhang} "
+        "--limitGenomeGenerateRAM {params.limit_genome_generate_ram}"
 
 #######################
 # RNA-seq read trimming

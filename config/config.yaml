@@ -23,8 +23,9 @@ fastp:
 
 # genome index step
 star_index:
-  sjdbOverhang: 100 # as recommended in STAR manual https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf
-
+  sjdbOverhang: 100                    # as recommended in STAR manual https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf
+  limitGenomeGenerateRAM: 100000000000  # maximum available RAM (bytes) default is 31000000000 bytes = 31Gb
+                          
 # alignment step
 star:
   samtype:                'BAM SortedByCoordinate' # type of output
