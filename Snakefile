@@ -65,9 +65,11 @@ rule all:
     input:
         RESULT_DIR + "counts.txt"
     message:
-        "Job done! Removing temporary directory"
+        "Job done! Removing temporary directory and copying config files."
     shell:
-        "rm -r {WORKING_DIR}"
+        "rm -r {WORKING_DIR} "
+        "cp config/config.yaml {RESULT_DIR} "
+        "cp config/samples.tsv {RESULT_DIR} "
 
 #######
 # Rules
@@ -177,8 +179,6 @@ rule map_to_genome_using_STAR:
         "--outSAMattributes {params.outSAMattributes} "
 
 
-
-
 #########################################
 # Get table containing the raw counts
 #########################################
@@ -189,8 +189,7 @@ rule create_counts_table:
         gff  = config["refs"]["gff"]
     output:
         RESULT_DIR + "counts.txt"
-    conda:
-        "envs/subread.yaml"
+    threads: 10
     shell:
-        "featureCounts -O -t exon -g transcript_id -F 'gtf' -a {input.gff} -o {output} {input.bams}"
+        "featureCounts -T {threads} -O -t exon -g transcript_id -F 'gtf' -a {input.gff} -o {output} {input.bams}"
 
