@@ -21,7 +21,15 @@ This pipeline analyses the raw RNA-seq data and produces two files containing th
 ## Input files
 * __RNA-seq fastq files__ as listed in the `config/samples.tsv` file.
 * __A genomic reference in FASTA format__. For instance, a fasta file containing the 12 chromosomes of tomato (*Solanum lycopersicum*).
-* __A genome annotation file in the [GTF format](https://useast.ensembl.org/info/website/upload/gff.html)__. You can convert a GFF annotation file format into GTF with the [gffread program from Cufflinks](http://ccb.jhu.edu/software/stringtie/gff.shtml): `gffread my.gff3 -T -o my.gtf`.
+* __A genome annotation file in the [GTF format](https://useast.ensembl.org/info/website/upload/gff.html)__. You can convert a GFF annotation file format into GTF with the [gffread program from Cufflinks](http://ccb.jhu.edu/software/stringtie/gff.shtml): `gffread my.gff3 -T -o my.gtf`. :warning: for featureCounts to work, the _feature_ in the GTF file should be `exon` while the _meta-feature_ has to be `transcript_id`. 
+
+Below is an example of a GTF file format. :warning: a real GTF file does not have column names (seqname, source, etc.). Remove all non-data rows. 
+
+| seqname | source | feature | start  | end  | score | strand | frame | attributes |
+|-----------|------------|------|------|------|---|---|---|----------------------------------------------------------------------------------------------------|
+| SL4.0ch01 | maker_ITAG | CDS  | 279  | 743  | . | + | 0 | transcript_id "Solyc01g004000.1.1"; gene_id "gene:Solyc01g004000.1"; gene_name "Solyc01g004000.1"; |
+| SL4.0ch01 | maker_ITAG | exon | 1173 | 1616 | . | + | . | transcript_id "Solyc01g004002.1.1"; gene_id "gene:Solyc01g004002.1"; gene_name "Solyc01g004002.1"; |
+| SL4.0ch01 | maker_ITAG | exon | 3793 | 3971 | . | + | . | transcript_id "Solyc01g004002.1.1"; gene_id "gene:Solyc01g004002.1"; gene_name "Solyc01g004002.1"; |
 
 ## Output files
 * A table of raw counts: this table can be used to perform a differential gene expression analysis with DESeq2. 
