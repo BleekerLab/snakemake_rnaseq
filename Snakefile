@@ -91,7 +91,7 @@ rule star_index:
     params:
         genome_dir = WORKING_DIR + "genome/",
         sjdb_overhang = config["star_index"]["sjdbOverhang"],
-        limit_genome_generate_ram = config["star"]["limitGenomeGenerateRAM"]
+        limit_genome_generate_ram = config["star_index"]["limitGenomeGenerateRAM"]
     threads: 10
     shell:
         "mkdir -p {params.genome_dir}; " # if directory not created STAR will ask for it
