@@ -67,9 +67,9 @@ rule all:
     message:
         "Job done! Removing temporary directory and copying config files."
     shell:
-        "rm -r {WORKING_DIR} "
-        "cp config/config.yaml {RESULT_DIR} "
-        "cp config/samples.tsv {RESULT_DIR} "
+        "rm -r {WORKING_DIR};"
+        "cp config/config.yaml {RESULT_DIR};"
+        "cp config/samples.tsv {RESULT_DIR}"
 
 #######
 # Rules
