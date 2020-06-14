@@ -67,7 +67,7 @@ rule all:
     message:
         "Job done! Removing temporary directory and copying config files."
     shell:
-        "rm -r {WORKING_DIR};"
+        # "rm -r {WORKING_DIR};"
         "cp config/config.yaml {RESULT_DIR};"
         "cp config/samples.tsv {RESULT_DIR}"
 
@@ -148,11 +148,12 @@ rule map_to_genome_using_STAR:
         forward = WORKING_DIR + "trimmed/" + "{sample}_R1_trimmed.fq.gz",
         reverse = WORKING_DIR + "trimmed/" + "{sample}_R2_trimmed.fq.gz"
     output:
-        temp(RESULT_DIR + "star/{sample}_Aligned.sortedByCoord.out.bam"),
+        RESULT_DIR + "star/{sample}_Aligned.sortedByCoord.out.bam",
         RESULT_DIR +      "star/{sample}_Log.final.out",
     message:
         "mapping {wildcards.sample} reads to genome"
     params:
+        sample_name = "{sample}",
         prefix = RESULT_DIR + "star/{sample}_",
         maxmismatches = config["star"]["mismatches"],
         unmapped = config["star"]["unmapped"]   ,
@@ -164,21 +165,39 @@ rule map_to_genome_using_STAR:
         matesgap =  config["star"]["matesgap"],
         genome_index = WORKING_DIR + "genome/"
     threads: 10
-    shell:
-        "STAR --genomeDir {params.genome_index} "
-        "--readFilesIn {input.forward} {input.reverse} "
-        "--readFilesCommand zcat "
-        "--outFilterMultimapNmax {params.multimappers} "
-        "--outFilterMismatchNmax {params.maxmismatches} "
-        "--alignMatesGapMax {params.matesgap} "
-        "--alignIntronMax {params.intronmax} "
-        "--outFilterMatchNminOverLread {params.matchNminoverLread} "
-        "--alignEndsType EndToEnd "
-        "--runThreadN {threads} "
-        "--outReadsUnmapped {params.unmapped} "
-        "--outFileNamePrefix {params.prefix} "
-        "--outSAMtype {params.outSamType} "
-        "--outSAMattributes {params.outSAMattributes} "
+    run:
+        if sample_is_single_end(params.sampleName):
+            shell("""
+         STAR --genomeDir {params.genome_index} 
+        --readFilesIn {input.forward} {input.reverse} 
+        --readFilesCommand zcat 
+        --outFilterMultimapNmax {params.multimappers} 
+        --outFilterMismatchNmax {params.maxmismatches} 
+        --alignMatesGapMax {params.matesgap} 
+        --alignIntronMax {params.intronmax} 
+        --outFilterMatchNminOverLread {params.matchNminoverLread} 
+        --alignEndsType EndToEnd 
+        --runThreadN {threads} 
+        --outReadsUnmapped {params.unmapped} 
+        --outFileNamePrefix {params.prefix} 
+        --outSAMtype {params.outSamType} 
+        --outSAMattributes {params.outSAMattributes} """)
+        else:
+            shell("""
+        STAR --genomeDir {params.genome_index} 
+        --readFilesIn {input.forward} {input.reverse} 
+        --readFilesCommand zcat 
+        --outFilterMultimapNmax {params.multimappers} 
+        --outFilterMismatchNmax {params.maxmismatches} 
+        --alignMatesGapMax {params.matesgap} 
+        --alignIntronMax {params.intronmax} 
+        --outFilterMatchNminOverLread {params.matchNminoverLread} 
+        --alignEndsType EndToEnd 
+        --runThreadN {threads} 
+        --outReadsUnmapped {params.unmapped} 
+        --outFileNamePrefix {params.prefix} 
+        --outSAMtype {params.outSamType} 
+        --outSAMattributes {params.outSAMattributes} """)
 
 
 #########################################
