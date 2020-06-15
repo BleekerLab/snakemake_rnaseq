@@ -149,55 +149,31 @@ rule map_to_genome_using_STAR:
         reverse = WORKING_DIR + "trimmed/" + "{sample}_R2_trimmed.fq.gz"
     output:
         RESULT_DIR + "star/{sample}_Aligned.sortedByCoord.out.bam",
-        RESULT_DIR +      "star/{sample}_Log.final.out",
+        RESULT_DIR +      "star/{sample}_Log.final.out"
     message:
         "mapping {wildcards.sample} reads to genome"
     params:
         sample_name = "{sample}",
-        prefix = RESULT_DIR + "star/{sample}_",
-        maxmismatches = config["star"]["mismatches"],
-        unmapped = config["star"]["unmapped"]   ,
-        multimappers = config["star"]["multimappers"],
+        prefix =             RESULT_DIR + "star/{sample}_",
+        maxmismatches =      config["star"]["mismatches"],
+        unmapped =           config["star"]["unmapped"]   ,
+        multimappers =       config["star"]["multimappers"],
         matchNminoverLread = config["star"]["matchminoverlengthread"],
-        outSamType = config["star"]["samtype"],
-        outSAMattributes = config["star"]["samattributes"],
-        intronmax = config["star"]["intronmax"],
-        matesgap =  config["star"]["matesgap"],
-        genome_index = WORKING_DIR + "genome/"
+        outSamType =         config["star"]["samtype"],
+        outSAMattributes =   config["star"]["samattributes"],
+        intronmax =          config["star"]["intronmax"],
+        matesgap =           config["star"]["matesgap"],
+        genome_index =       WORKING_DIR + "genome/"
     threads: 10
     run:
-        if sample_is_single_end(params.sampleName):
-            shell("""
-         STAR --genomeDir {params.genome_index} 
-        --readFilesIn {input.forward} {input.reverse} 
-        --readFilesCommand zcat 
-        --outFilterMultimapNmax {params.multimappers} 
-        --outFilterMismatchNmax {params.maxmismatches} 
-        --alignMatesGapMax {params.matesgap} 
-        --alignIntronMax {params.intronmax} 
-        --outFilterMatchNminOverLread {params.matchNminoverLread} 
-        --alignEndsType EndToEnd 
-        --runThreadN {threads} 
-        --outReadsUnmapped {params.unmapped} 
-        --outFileNamePrefix {params.prefix} 
-        --outSAMtype {params.outSamType} 
-        --outSAMattributes {params.outSAMattributes} """)
+        if sample_is_single_end(params.sample_name):
+            shell("STAR --genomeDir {params.genome_index} --readFilesIn {input.forward} --readFilesCommand zcat --outFilterMultimapNmax {params.multimappers} \
+            --outFilterMismatchNmax {params.maxmismatches} --alignMatesGapMax {params.matesgap} --alignIntronMax {params.intronmax}  \
+            --outFilterMatchNminOverLread \ {params.matchNminoverLread} --alignEndsType EndToEnd --runThreadN {threads}  --outReadsUnmapped {params.unmapped} \
+            --outFileNamePrefix {params.prefix} --outSAMtype {params.outSamType}  --outSAMattributes {params.outSAMattributes}")  
         else:
-            shell("""
-        STAR --genomeDir {params.genome_index} 
-        --readFilesIn {input.forward} {input.reverse} 
-        --readFilesCommand zcat 
-        --outFilterMultimapNmax {params.multimappers} 
-        --outFilterMismatchNmax {params.maxmismatches} 
-        --alignMatesGapMax {params.matesgap} 
-        --alignIntronMax {params.intronmax} 
-        --outFilterMatchNminOverLread {params.matchNminoverLread} 
-        --alignEndsType EndToEnd 
-        --runThreadN {threads} 
-        --outReadsUnmapped {params.unmapped} 
-        --outFileNamePrefix {params.prefix} 
-        --outSAMtype {params.outSamType} 
-        --outSAMattributes {params.outSAMattributes} """)
+            shell("STAR --genomeDir {params.genome_index} --readFilesIn {input.forward} {input.reverse} --readFilesCommand zcat --outFilterMultimapNmax {params.multimappers} --outFilterMismatchNmax {params.maxmismatches} --alignMatesGapMax {params.matesgap} --alignIntronMax {params.intronmax} \
+--outFilterMatchNminOverLread {params.matchNminoverLread} --alignEndsType EndToEnd  --runThreadN {threads}  --outReadsUnmapped {params.unmapped} --outFileNamePrefix {params.prefix}  --outSAMtype {params.outSamType} --outSAMattributes {params.outSAMattributes}")         
 
 
 #########################################
