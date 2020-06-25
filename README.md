@@ -119,3 +119,9 @@ singularity + docker image
 
 # Directed Acyclic Graph of jobs
 ![dag](./dag.png)
+
+# References
+
+## Authors
+Marc Galland, m.galland@uva.nl
+Tijs Bliek, m.bliek@uva.nl
