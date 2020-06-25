@@ -4,20 +4,73 @@ ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 ENV PATH /opt/conda/bin:$PATH
 ENV PATH /opt/conda/envs/env/bin:$PATH
 
+###############
+# General setup
+###############
+
+# Create a non-root user
+ARG username=al-khawarizmi
+ARG uid=1000
+ARG gid=100
+ENV USER $username
+ENV UID $uid
+ENV GID $gid
+ENV HOME /home/$USER
+
+RUN adduser --disabled-password \
+    --gecos "Non-root user" \
+    --uid $UID \
+    --gid $GID \
+    --home $HOME \
+    $USER
+
+
+# Change Shell as conda is not compatible with default /bin/sh
+SHELL [ "/bin/bash", "--login", "-c" ]
+
 # Add environment file where dependencies are listed
-ADD environment.yaml /tmp/environment.yml
+ADD environment.yaml /tmp/environment.yaml
 
+# Add entrypoint script to be executed so that conda env is activated
+ADD entrypoint.sh /usr/local/bin/
+RUN chown $UID:$GID /usr/local/bin/entrypoint.sh && \
+    chmod u+x /usr/local/bin/entrypoint.sh
 
+# wget is required to download miniconda installer script
 RUN apt-get update --fix-missing && \
     apt-get install -y wget  
 
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
-    /bin/bash ~/miniconda.sh -b -p /opt/conda && \
-    rm ~/miniconda.sh && \
-    ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
-    echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc 
+# create a project directory inside user home
+ENV PROJECT_DIR $HOME/rnaseq
+RUN mkdir $PROJECT_DIR
+WORKDIR $PROJECT_DIR
 
-RUN conda env create -f /tmp/environment.yml
+###################
+# install miniconda
+###################
 
-RUN CONDA_ENV=$(head -n 1 /tmp/environment.yml |cut -d":" -f 2|xargs) 
-RUN echo "conda activate $CONDA_ENV" >> ~/.bashrc
+# download and install Miniconda
+ENV CONDA_DIR $HOME/miniconda3
+RUN wget --quiet https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
+    chmod +x ~/miniconda.sh && \
+    ~/miniconda.sh -b -p $CONDA_DIR && \
+    rm ~/miniconda.sh
+
+# make non-activate conda commands available
+ENV PATH=$CONDA_DIR/bin:$PATH
+
+# make conda activate command available from /bin/bash --login shells
+RUN echo ". $CONDA_DIR/etc/profile.d/conda.sh" >> ~/.profile
+
+# make conda activate command available from /bin/bash --interative shells
+RUN conda init bash
+
+
+##########################
+# Create conda env
+##########################
+
+RUN conda env create --name rnaseq --file /tmp/environment.yaml --force && \
+    conda clean --all --yes
+
+ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]

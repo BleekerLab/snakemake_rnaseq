@@ -5,7 +5,7 @@
 
 # Description
 
-A snakemake pipeline for the analysis of RNA-seq data. It processes RNA-seq fastq files and delivers a raw and a normalised count tables.
+A Snakemake pipeline for the analysis of _messenger_ RNA-seq data. It processes mRNA-seq fastq files and delivers one raw and one normalised count tables. It can process single or paired-end data and is mostly suited for Illumina sequencing data. 
 
 ## Aim
 To align, count and normalize counts using single or paired-end Illumina RNA-seq data.
@@ -56,7 +56,7 @@ This folder should contain the `fastq` of the paired-end RNA-seq data, you want 
 
 
 
-## Pipeline depencies
+## Pipeline dependencies
 * [Snakemake](https://snakemake.readthedocs.io/en/stable/)
 * [fastp](https://github.com/OpenGene/fastp)
 * [STAR](https://github.com/alexdobin/STAR)   
@@ -92,6 +92,19 @@ The Snakefile will then take care of installing and loading the packages and sof
 For instance, in a Shell window, go inside the `snakemake_rnaseq_to_counts/` directory and type: `docker run -it -v $PWD:/home/ mgalland/snakemake /bin/bash`.  
 This will link your working directory (`snakemake_rnaseq_to_counts/`) to a directory called `/rnaseq` inside the container. Then, the ` -it` option will have you to enter the container where you can run Snakemake commands and retrieve your data folder.    
 Finally, to export your results outside of the container, you can use the Docker `cp` command. See it there: https://docs.docker.com/engine/reference/commandline/cp/.
+
+The image was built using a [Dockerfile](envs/Dockerfile) based on the Miniconda3 official image. 
+The following command-line was used:  
+```
+docker image build --build-arg username=$USER  
+                   --build-arg uid=1000   
+                   --build-arg gid=100  
+                   --file Dockerfile 
+                   --tag snakemake_rnaseq:latest 
+                   ./
+```
+
+
 
 ## Configuration 
 :pencil2: :clipboard:  
