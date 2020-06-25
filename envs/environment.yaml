@@ -1,4 +1,4 @@
-name: rnaseq2counts
+name: rnaseq
 channels:
   - bioconda
   - conda-forge
