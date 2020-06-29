@@ -24,8 +24,6 @@ SHELL [ "/bin/bash", "--login", "-c" ]
 RUN adduser --home $HOME --disabled-password --gecos "Non-root-user" --uid $UID --gid $GID $USERNAME
     
 
-# Add Miniconda3 script
-ADD Miniconda3-py37_4.8.3-Linux-x86_64.sh /tmp/Miniconda3-py37_4.8.3-Linux-x86_64.sh  
 # Add environment file where dependencies are listed
 ADD environment.yaml /tmp/environment.yaml
 
@@ -50,8 +48,10 @@ USER $USERNAME
 ####################
 ## install miniconda
 ####################
+# Add Miniconda3 script
+ADD Miniconda3-py37_4.8.3-Linux-x86_64.sh /tmp/Miniconda3-py37_4.8.3-Linux-x86_64.sh  
 
-# # download and install Miniconda
+## install Miniconda
 ENV CONDA_DIR $HOME/miniconda3
 RUN chmod u+x /tmp/Miniconda3-py37_4.8.3-Linux-x86_64.sh
 RUN bash /tmp/Miniconda3-py37_4.8.3-Linux-x86_64.sh -b -p $CONDA_DIR
