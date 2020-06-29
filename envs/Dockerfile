@@ -9,10 +9,10 @@ ENV PATH=/opt/conda/envs/env/bin:$PATH
 ###############
 
 # Create a non-root user
-ENV username=al-khawarizmi
+ARG username=al-khawarizmi
 ENV uid=1000
 ENV gid=100
-ARG USERNAME=marc
+ENV USER=$username
 ENV UID=$uid
 ENV GID=$gid
 ENV HOME=/home/$USER
@@ -21,7 +21,7 @@ ENV HOME=/home/$USER
 SHELL [ "/bin/bash", "--login", "-c" ]
 
 
-RUN adduser --home $HOME --disabled-password --gecos "Non-root-user" --uid $UID --gid $GID $USERNAME
+RUN adduser --home $HOME --disabled-password --gecos "Non-root-user" --uid $UID --gid $GID $USER
     
 
 # Add environment file where dependencies are listed
@@ -44,18 +44,17 @@ RUN mkdir $PROJECT_DIR
 WORKDIR $PROJECT_DIR
 
 
-USER $USERNAME
-####################
-## install miniconda
-####################
-# Add Miniconda3 script
-ADD Miniconda3-py37_4.8.3-Linux-x86_64.sh /tmp/Miniconda3-py37_4.8.3-Linux-x86_64.sh  
+USER $USER
+# ###################
+# # install miniconda
+# ###################
 
-## install Miniconda
+# # download and install Miniconda
 ENV CONDA_DIR $HOME/miniconda3
-RUN chmod u+x /tmp/Miniconda3-py37_4.8.3-Linux-x86_64.sh
-RUN bash /tmp/Miniconda3-py37_4.8.3-Linux-x86_64.sh -b -p $CONDA_DIR
-RUN rm /tmp/Miniconda3-py37_4.8.3-Linux-x86_64.sh
+RUN wget --quiet https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh &&\
+    chmod +x ~/miniconda.sh &&\
+    ~/miniconda.sh -b -p $CONDA_DIR &&\
+    rm ~/miniconda.sh
 
 # # make non-activate conda commands available
 ENV PATH=$CONDA_DIR/bin:$PATH
@@ -67,9 +66,9 @@ RUN echo ". $CONDA_DIR/etc/profile.d/conda.sh" >> ~/.profile
 RUN conda init bash
 
 
-###########################
-## Create conda env
-###########################
+# ##########################
+# # Create conda env
+# ##########################
 
 RUN conda env create --name rnaseq --file /tmp/environment.yaml --force 
 RUN conda clean --all --yes
