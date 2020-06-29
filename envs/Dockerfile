@@ -65,12 +65,14 @@ RUN echo ". $CONDA_DIR/etc/profile.d/conda.sh" >> ~/.profile
 # # make conda activate command available from /bin/bash --interative shells
 RUN conda init bash
 
+ENV ENV_PREFIX $HOME/env
+
 
 # ##########################
 # # Create conda env
 # ##########################
 
-RUN conda env create --name rnaseq --file /tmp/environment.yaml --force 
+RUN conda env create --file /tmp/environment.yaml --prefix $ENV_PREFIX --force 
 RUN conda clean --all --yes
 
 ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]

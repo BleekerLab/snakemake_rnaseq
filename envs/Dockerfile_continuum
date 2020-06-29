@@ -1,0 +1,15 @@
+FROM continuumio/miniconda:4.7.12
+
+WORKDIR /home/docker_conda_template
+
+COPY environment.yaml ./
+COPY boot.sh ./
+
+RUN chmod +x boot.sh
+
+RUN conda env create -f environment.yaml
+
+RUN echo "source activate rnaseq" > ~/.bashrc
+ENV PATH /opt/conda/envs/rnaseq/bin:$PATH
+
+#ENTRYPOINT ["./boot.sh"]
