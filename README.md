@@ -85,15 +85,14 @@ The Snakefile will then take care of installing and loading the packages and sof
 ### Option 2: Docker 
 :round_pushpin: Option 2: using a Docker container :two:  
 1. Install Docker desktop for your operating system.
-2. Open a Shell window and type: `docker pull mgalland/rnaseq` to retrieve a Docker container that includes the pipeline required softwares (Snakemake and conda and many others).
+2. Open a Shell window and type: `docker pull mgalland/rnaseq:4.7.12` to retrieve a Docker container that includes the pipeline required softwares (Snakemake and conda and many others).
 3. Run the pipeline on your system with:
-` docker run --mount source=<data folder on host machine>,target=<folder inside container that will corresponds to data folder> mgalland/rnaseq Snakemake --use-conda --cores N`.
+`docker run -it --rm -v $PWD:/home/snakemake/ snakemake_rnaseq:4.7.12` and add any options for snakemake (`-n`, `--cores 10`) etc.
 
-For instance, in a Shell window, go inside the `snakemake_rnaseq_to_counts/` directory and type: `docker run -it -v $PWD:/home/ mgalland/snakemake /bin/bash`.  
-This will link your working directory (`snakemake_rnaseq_to_counts/`) to a directory called `/rnaseq` inside the container. Then, the ` -it` option will have you to enter the container where you can run Snakemake commands and retrieve your data folder.    
-Finally, to export your results outside of the container, you can use the Docker `cp` command. See it there: https://docs.docker.com/engine/reference/commandline/cp/.
+This will link your working directory (`$PWD`) to a directory called `/home/snakemake/` inside the container. Results will be written to a folder named `$PWD/results/` (you can change `results` to something you like in the `result_dir` parameter of the `config.yaml`).
 
-The image was built using a [Dockerfile](envs/Dockerfile) based on the Miniconda3 official image. 
+The image was built using a [Dockerfile](envs/Dockerfile) based on the [4.7.12 Miniconda3 official Docker image](https://hub.docker.com/r/continuumio/miniconda3/tags).  
+
 The following command-line was used:  
 ```
 docker image build --build-arg username=$USER  
