@@ -1,78 +1,12 @@
-FROM ubuntu:18.04
+FROM continuumio/miniconda:4.7.12
 
-ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
-ENV PATH=/opt/conda/bin:$PATH
-ENV PATH=/opt/conda/envs/env/bin:$PATH
+WORKDIR /home/snakemake/
 
-###############
-# General setup
-###############
+COPY environment.yaml ./
 
-# Create a non-root user
-ARG username=al-khawarizmi
-ENV uid=1000
-ENV gid=100
-ENV USER=$username
-ENV UID=$uid
-ENV GID=$gid
-ENV HOME=/home/$USER
+RUN conda env create -f environment.yaml
 
-# # Change Shell as conda is not compatible with default /bin/sh
-SHELL [ "/bin/bash", "--login", "-c" ]
+RUN echo "source activate rnaseq" > ~/.bashrc
+ENV PATH /opt/conda/envs/rnaseq/bin:$PATH
 
-
-RUN adduser --home $HOME --disabled-password --gecos "Non-root-user" --uid $UID --gid $GID $USER
-    
-
-# Add environment file where dependencies are listed
-ADD environment.yaml /tmp/environment.yaml
-
-# Add entrypoint script to be executed so that conda env is activated
-ADD entrypoint.sh /usr/local/bin/
-
-
-RUN chown $UID:$GID /usr/local/bin/entrypoint.sh 
-RUN chmod u+x /usr/local/bin/entrypoint.sh
-
-# # wget is required to download miniconda installer script
-RUN apt-get update --fix-missing &&\
-    apt-get install -y wget  
-
-# # create a project directory inside user home
-ENV PROJECT_DIR $HOME/rnaseq
-RUN mkdir $PROJECT_DIR
-WORKDIR $PROJECT_DIR
-
-
-USER $USER
-# ###################
-# # install miniconda
-# ###################
-
-# # download and install Miniconda
-ENV CONDA_DIR $HOME/miniconda3
-RUN wget --quiet https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh &&\
-    chmod +x ~/miniconda.sh &&\
-    ~/miniconda.sh -b -p $CONDA_DIR &&\
-    rm ~/miniconda.sh
-
-# # make non-activate conda commands available
-ENV PATH=$CONDA_DIR/bin:$PATH
-
-# # make conda activate command available from /bin/bash --login shells
-RUN echo ". $CONDA_DIR/etc/profile.d/conda.sh" >> ~/.profile
-
-# # make conda activate command available from /bin/bash --interative shells
-RUN conda init bash
-
-ENV ENV_PREFIX $HOME/env
-
-
-# ##########################
-# # Create conda env
-# ##########################
-
-RUN conda env create --file /tmp/environment.yaml --prefix $ENV_PREFIX --force 
-RUN conda clean --all --yes
-
-ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
+ENTRYPOINT ["snakemake"]
