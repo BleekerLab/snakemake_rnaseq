@@ -3,6 +3,32 @@
 [![Snakemake](https://img.shields.io/badge/snakemake-≥5.2.0-brightgreen.svg)](https://snakemake.bitbucket.io)    
 [![Miniconda](https://img.shields.io/badge/miniconda-blue.svg)](https://conda.io/miniconda)
 
+<!-- MarkdownTOC autolink="true" levels="1,2" -->
+
+- [Description](#description)
+	- [Aim](#aim)
+	- [Description](#description-1)
+	- [Input files](#input-files)
+	- [Output files](#output-files)
+	- [Prerequisites: what you should know before using this pipeline](#prerequisites-what-you-should-know-before-using-this-pipeline)
+	- [Content of this GitHub repository](#content-of-this-github-repository)
+	- [Pipeline dependencies](#pipeline-dependencies)
+- [Usage \(local machine\)](#usage-local-machine)
+	- [Download or clone the Github repository](#download-or-clone-the-github-repository)
+	- [Installing the required softwares and packages](#installing-the-required-softwares-and-packages)
+	- [Configuration](#configuration)
+	- [Snakemake execution](#snakemake-execution)
+	- [Dry run](#dry-run)
+	- [Real run](#real-run)
+- [Main outputs](#main-outputs)
+- [Usage \(HPC cluster\)](#usage-hpc-cluster)
+- [Directed Acyclic Graph of jobs](#directed-acyclic-graph-of-jobs)
+- [References](#references)
+	- [Authors](#authors)
+
+<!-- /MarkdownTOC -->
+
+
 # Description
 
 A Snakemake pipeline for the analysis of _messenger_ RNA-seq data. It processes mRNA-seq fastq files and delivers one raw and one normalised count tables. It can process single or paired-end data and is mostly suited for Illumina sequencing data. 
@@ -73,8 +99,8 @@ You will need a local copy of the `snakemake_rnaseq_to_counts` on your machine. 
 
 ## Installing the required softwares and packages 
 
-### Option 1: conda
-:round_pushpin: Option 1: using the conda package manager :one:  
+### Option 1: conda (easiest)
+:round_pushpin: Option 1: using the conda package manager 
 First, you need to create an environment where core softwares such as `Snakemake` will be installed. Second, Snakemake itself will use conda to install the required softwares in each rule.
 1. Install the [Miniconda3 distribution (Python 3.7 version)](https://docs.conda.io/en/latest/miniconda.html) for your OS (Windows, Linux or Mac OS X).  
 2. Inside a Shell window (command line interface), create a virtual environment named `rnaseq` using the `environment.yaml` file with the following command: `conda env create --name rnaseq --file envs/environment.yaml`
@@ -82,26 +108,16 @@ First, you need to create an environment where core softwares such as `Snakemake
 
 The Snakefile will then take care of installing and loading the packages and softwares required by each step of the pipeline.
 
-### Option 2: Docker 
-:round_pushpin: Option 2: using a Docker container :two:  
+### Option 2: Docker (recommended)
+:round_pushpin: Option 2: using a Docker container  
 1. Install Docker desktop for your operating system.
-2. Open a Shell window and type: `docker pull mgalland/rnaseq:4.7.12` to retrieve a Docker container that includes the pipeline required softwares (Snakemake and conda and many others).
+2. Open a Shell window and type: `docker pull bleekerlab/snakemake_rnaseq:4.7.12` to retrieve a Docker image that includes the pipeline required softwares (Snakemake and conda and many others).
 3. Run the pipeline on your system with:
-`docker run -it --rm -v $PWD:/home/snakemake/ snakemake_rnaseq:4.7.12` and add any options for snakemake (`-n`, `--cores 10`) etc.
+`docker run --rm -v $PWD:/home/snakemake/ bleekerlab/snakemake_rnaseq:4.7.12` and add any options for snakemake (`-n`, `--cores 10`) etc.  
 
 This will link your working directory (`$PWD`) to a directory called `/home/snakemake/` inside the container. Results will be written to a folder named `$PWD/results/` (you can change `results` to something you like in the `result_dir` parameter of the `config.yaml`).
 
 The image was built using a [Dockerfile](envs/Dockerfile) based on the [4.7.12 Miniconda3 official Docker image](https://hub.docker.com/r/continuumio/miniconda3/tags).  
-
-The following command-line was used:  
-```
-docker image build --build-arg username=$USER  
-                   --build-arg uid=1000   
-                   --build-arg gid=100  
-                   --file Dockerfile 
-                   --tag snakemake_rnaseq:latest 
-                   ./
-```
 
 
 
