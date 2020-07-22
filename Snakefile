@@ -63,11 +63,10 @@ def get_trimmed(wildcards):
 #################
 rule all:
     input:
-        RESULT_DIR + "counts.txt"
+        RESULT_DIR + "raw_counts.txt"
     message:
-        "Job done! Removing temporary directory and copying config files."
+        "Pipeline run complete!"
     shell:
-        # "rm -r {WORKING_DIR};"
         "cp config/config.yaml {RESULT_DIR};"
         "cp config/samples.tsv {RESULT_DIR}"
 
@@ -83,7 +82,7 @@ rule all:
 rule star_index:
     input:
         fasta = config["refs"]["genome"],
-        gff =   config["refs"]["gff"]
+        gtf =   config["refs"]["gtf"]
     output:
          genome_index = [WORKING_DIR + "genome/" + f for f in ["chrLength.txt","chrNameLength.txt","chrName.txt","chrStart.txt","Genome","genomeParameters.txt","SA","SAindex"]]
     message:
@@ -99,7 +98,7 @@ rule star_index:
         "--runMode genomeGenerate "
         "--genomeDir {params.genome_dir} "
         "--genomeFastaFiles {input.fasta} "
-        "--sjdbGTFfile {input.gff} "
+        "--sjdbGTFfile {input.gtf} "
         "--sjdbOverhang {params.sjdb_overhang} "
         "--limitGenomeGenerateRAM {params.limit_genome_generate_ram}"
 
@@ -176,17 +175,20 @@ rule map_to_genome_using_STAR:
 --outFilterMatchNminOverLread {params.matchNminoverLread} --alignEndsType EndToEnd  --runThreadN {threads}  --outReadsUnmapped {params.unmapped} --outFileNamePrefix {params.prefix}  --outSAMtype {params.outSamType} --outSAMattributes {params.outSAMattributes}")         
 
 
-#########################################
-# Get table containing the raw counts
-#########################################
+##################################
+# Produce table of raw gene counts
+##################################
 
 rule create_counts_table:
     input:
         bams = expand(RESULT_DIR + "star/{sample}_Aligned.sortedByCoord.out.bam", sample = SAMPLES),
-        gff  = config["refs"]["gff"]
+        gff  = config["refs"]["gtf"]
     output:
-        RESULT_DIR + "counts.txt"
+        RESULT_DIR + "raw_counts.txt"
     threads: 10
     shell:
         "featureCounts -T {threads} -O -t exon -g transcript_id -F 'gtf' -a {input.gff} -o {output} {input.bams}"
 
+#########################################
+# Produce table of normalised gene counts
+#########################################
