@@ -21,10 +21,11 @@
 - [Installation and usage \(HPC cluster\)](#installation-and-usage-hpc-cluster)
 	- [Installation](#installation-1)
 	- [Usage](#usage-1)
-- [Directed Acyclic Graph of jobs](#directed-acyclic-graph-of-jobs)
-- [References](#references)
+- [References :green_book:](#references-green_book)
 	- [Authors](#authors)
 	- [Documentation](#documentation)
+	- [Acknowledgments :clap:](#acknowledgments-clap)
+- [Directed Acyclic Graph of jobs](#directed-acyclic-graph-of-jobs)
 
 <!-- /MarkdownTOC -->
 
@@ -141,10 +142,7 @@ You will need a local copy of the GitHub `snakemake_rnaseq` repository on your m
 See the detailed protocol [here](./hpc/README.md). 
 
 
-# Directed Acyclic Graph of jobs
-![dag](./dag.png)
-
-# References
+# References :green_book:
 
 ## Authors
 - Marc Galland, m.galland@uva.nl 
@@ -156,3 +154,8 @@ See the detailed protocol [here](./hpc/README.md).
 - [STAR](https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf)
 - [fastp](https://github.com/OpenGene/fastp)
 - [Subread](http://bioinf.wehi.edu.au/subread-package/SubreadUsersGuide.pdf) 
+
+## Acknowledgments :clap:
+
+# Directed Acyclic Graph of jobs
+![dag](./dag.png)
