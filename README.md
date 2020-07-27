@@ -12,27 +12,27 @@
 	- [Prerequisites: what you should know before using this pipeline](#prerequisites-what-you-should-know-before-using-this-pipeline)
 	- [Content of this GitHub repository](#content-of-this-github-repository)
 	- [Pipeline dependencies](#pipeline-dependencies)
-- [Installation](#installation)
-	- [Download or clone the GitHub repository](#download-or-clone-the-github-repository)
-- [Usage \(local machine\)](#usage-local-machine)
-	- [:round_pushpin: Option 1: conda \(easiest\)](#round_pushpin-option-1-conda-easiest)
-	- [Option 2: Docker :whale: \(recommended\)](#option-2-docker-whale-recommended)
-	- [Configuration](#configuration)
-	- [Snakemake execution](#snakemake-execution)
+- [Installation and usage \(local machine\)](#installation-and-usage-local-machine)
+	- [Installation](#installation)
+	- [Usage](#usage)
+	- [Configuration :pencil2:](#configuration-pencil2)
 	- [Dry run](#dry-run)
 	- [Real run](#real-run)
-- [Usage \(HPC cluster\)](#usage-hpc-cluster)
+- [Installation and usage \(HPC cluster\)](#installation-and-usage-hpc-cluster)
+	- [Installation](#installation-1)
+	- [Usage](#usage-1)
 - [Directed Acyclic Graph of jobs](#directed-acyclic-graph-of-jobs)
 - [References](#references)
 	- [Authors](#authors)
-	- [Publications](#publications)
+	- [Documentation](#documentation)
 
 <!-- /MarkdownTOC -->
 
 
 # Description
 
-A Snakemake pipeline for the analysis of _messenger_ RNA-seq data. It processes mRNA-seq fastq files and delivers one raw and one normalised count tables. It can process single or paired-end data and is mostly suited for Illumina sequencing data. 
+A Snakemake pipeline for the analysis of _messenger_ RNA-seq data. It processes mRNA-seq fastq files and delivers both raw and normalised/scaled count tables. This pipeline also outputs a QC report per fastq file and a `.bam` mapping file to use with a genome browser for instance.    
+This pipeline can process single or paired-end data and is mostly suited for Illumina sequencing data. 
 
 ## Description
 This pipeline analyses the raw RNA-seq data and produces two files containing the raw and normalized counts. 
@@ -57,13 +57,14 @@ Below is an example of a GTF file format. :warning: a real GTF file does not hav
 
 ## Output files
 
-* __A table of raw counts__ called `counts.txt`: this table can be used to perform a differential gene expression analysis with `DESeq2`. 
+* __A table of raw counts__ called `raw_counts.txt`: this table can be used to perform a differential gene expression analysis with `DESeq2`. 
 * __A table of DESeq2-normalised counts__ called `scaled_counts.tsv`: this table can be used to perform an Exploratory Data Analysis with a PCA, heatmaps, sample clustering, etc.
-* __fastp QC reports__ (one per fastq file).
+* __fastp QC reports__: one per fastq file.
+* __bam files__: one per fastq file (or pair of fastq files). 
 
 ## Prerequisites: what you should know before using this pipeline
-- Some command of the Unix Shell to connect to a remote server where you will execute the pipeline (e.g. SURF Lisa Cluster). You can find a good tutorial from the Software Carpentry Foundation [here](https://swcarpentry.github.io/shell-novice/) and another one from Berlin Bioinformatics [here](http://bioinformatics.mdc-berlin.de/intro2UnixandSGE/unix_for_beginners/README.html).
-- Some command of the Unix Shell to transfer datasets to and from a remote server (to transfer sequencing files and retrieve the results/). The Berlin Bioinformatics Unix begginer guide available [here] should be sufficient for that (check the `wget` and `scp` commands).
+- Some command of the Unix Shell to connect to a remote server where you will execute the pipeline. You can find a good tutorial from the Software Carpentry Foundation [here](https://swcarpentry.github.io/shell-novice/) and another one from Berlin Bioinformatics [here](http://bioinformatics.mdc-berlin.de/intro2UnixandSGE/unix_for_beginners/README.html).
+- Some command of the Unix Shell to transfer datasets to and from a remote server (to transfer sequencing files and retrieve the results/). The Berlin Bioinformatics Unix begginer guide available [here](http://bioinformatics.mdc-berlin.de/intro2UnixandSGE/unix_for_beginners/README.html)) should be sufficient for that (check the `wget` and `scp` commands).
 - An understanding of the steps of a canonical RNA-Seq analysis (trimming, alignment, etc.). You can find some info [here](https://bitesizebio.com/13542/what-everyone-should-know-about-rna-seq/).
 
 ## Content of this GitHub repository
@@ -77,7 +78,7 @@ Below is an example of a GTF file format. :warning: a real GTF file does not hav
 `seqtk sample -s100 {inputfile(can be gzipped)} 250000 > {output(always gunzipped)}`
 This folder should contain the `fastq` of the paired-end RNA-seq data, you want to run.
 - `envs/`: a folder containing the environments needed for the conda package manager. If run with the `--use-conda` command, Snakemake will install the necessary softwares and packages using the conda environment files.
-- `Dockerfile`: a Docker file used to build the docker image that, once run using `docker run rnaseq:dockerfile Snakemake --cores N --use-conda` will trigger installation of the necessary softwares and run the Snakemake pipeline.  
+- `Dockerfile`: a Docker file used to build the docker image that, once run using `docker run bleekerlab/snakemake_rnaseq:4.7.12 --cores N` will trigger installation of the necessary softwares and run the Snakemake pipeline. Change `N` to a number of cores e.g. 1 or 10.  
 
 ## Pipeline dependencies
 * [Snakemake](https://snakemake.readthedocs.io/en/stable/)
@@ -87,25 +88,30 @@ This folder should contain the `fastq` of the paired-end RNA-seq data, you want 
 * [DESeq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html)
 
 
-# Installation
+# Installation and usage (local machine)
 
-## Download or clone the GitHub repository
-You will need a local copy of the `snakemake_rnaseq` on your machine. You can either:
+## Installation
+
+You will need a local copy of the GitHub `snakemake_rnaseq` repository on your machine. You can either:
 - use git in the shell: `git clone git@github.com:BleekerLab/snakemake_rnaseq.git`.
 - click on ["Clone or download"](https://github.com/BleekerLab/snakemake_rnaseq/archive/master.zip) and select `download`. 
 - Then navigate inside the `snakemake_rnaseq` folder using Shell commands.
 
-# Usage (local machine)
+## Usage 
 
-## :round_pushpin: Option 1: conda (easiest)
+## Configuration :pencil2:
+You'll need to change a few things to accomodate this pipeline to your needs. Make sure you have changed the parameters in the `config/config.yaml` file that specifies where to find the sample data file, the genomic and transcriptomic reference fasta files to use and the parameters for certains rules etc.    
+This file is used so the `Snakefile` does not need to be changed when locations or parameters need to be changed.
+
+### :round_pushpin: Option 1: conda (easiest)
 Using the conda package manager, you need to create an environment where core softwares such as `Snakemake` will be installed.   
 1. Install the [Miniconda3 distribution (>= Python 3.7 version)](https://docs.conda.io/en/latest/miniconda.html) for your OS (Windows, Linux or Mac OS X).  
 2. Inside a Shell window (command line interface), create a virtual environment named `rnaseq` using the `envs/environment.yaml` file with the following command: `conda env create --name rnaseq --file envs/environment.yaml`
 3. Then, before you run the Snakemake pipeline, activate this virtual environment with `source activate rnaseq`.
 
-While a `conda` environment will in most cases work fine, Docker is the recommended solution as it increases pipeline execution reproducibility.
+While a `conda` environment will in most cases work just fine, Docker is the recommended solution as it increases pipeline execution reproducibility.
 
-## Option 2: Docker :whale: (recommended)
+### :whale: Option 2: Docker (recommended)
 :round_pushpin: Option 2: using a Docker container  
 1. Install Docker desktop for your operating system.
 2. Open a Shell window and type: `docker pull bleekerlab/snakemake_rnaseq:4.7.12` to retrieve a Docker image that includes the pipeline required softwares (Snakemake and conda and many others).
@@ -116,26 +122,23 @@ This will link your working directory (`$PWD`) to a directory called `/home/snak
 
 The image was built using a [Dockerfile](envs/Dockerfile) based on the [4.7.12 Miniconda3 official Docker image](https://hub.docker.com/r/continuumio/miniconda3/tags).  
 
-
-
-## Configuration 
-:pencil2: :clipboard:  
-You'll need to change a few things to accomodate this pipeline to your needs.
-Make sure you have changed the parameters in the `config/config.yaml` file that specifies where to find the sample data file, the genomic and transcriptomic reference fasta files to use and the parameters for certains rules etc.  
-This file is used so the `Snakefile` does not need to be changed when locations or parameters need to be changed.
-
-## Snakemake execution
-The Snakemake pipeline/workflow management system reads a master file (often called `Snakefile`) to list the steps to be executed and defining their order. It has many rich features. Read more [here](https://snakemake.readthedocs.io/en/stable/).
-
 ## Dry run
-From the folder containing the `Snakefile`, use the command `snakemake --use-conda -np` to perform a dry run that prints out the rules and commands.
+- With conda: use the `snakemake -np` to perform a dry run that prints out the rules and commands.
+- With Docker: use the `docker run ` 
 
 ## Real run
-Simply type `Snakemake --use-conda` and provide the number of cores with `--cores 10` for ten cores for instance.  
-For cluster execution, please refer to the [Snakemake reference](https://snakemake.readthedocs.io/en/stable/executable.html#cluster-execution).
+With conda: `snakemake --cores 10`
 
-# Usage (HPC cluster)
-To be written.
+
+# Installation and usage (HPC cluster)
+
+## Installation
+You will need a local copy of the GitHub `snakemake_rnaseq` repository on your machine. On a HPC system, you will have to clone it using the Shell command-line: `git clone git@github.com:BleekerLab/snakemake_rnaseq.git`.
+- click on ["Clone or download"](https://github.com/BleekerLab/snakemake_rnaseq/archive/master.zip) and select `download`. 
+- Then navigate inside the `snakemake_rnaseq` folder using Shell commands.
+
+## Usage
+See the detailed protocol [here](./hpc/README.md). 
 
 
 # Directed Acyclic Graph of jobs
@@ -148,8 +151,8 @@ To be written.
 - Tijs Bliek, m.bliek@uva.nl
 - Frans van der Kloet f.m.vanderkloet@uva.nl
 
-## Publications
-- Snakemake publication
-- STAR publication
-- fastp publication
-- subread publication
+## Documentation
+- [Snakemake](https://snakemake.readthedocs.io/en/stable/)
+- [STAR](https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf)
+- [fastp](https://github.com/OpenGene/fastp)
+- [Subread](http://bioinf.wehi.edu.au/subread-package/SubreadUsersGuide.pdf) 

@@ -1,0 +1,10 @@
+sample	fq1	fq2
+PI127826_F1	/home/galland/data/20171123_F1_lines_LA1777_PI127826_Cv/14865_PI127826_F1_AGCGATAG-AGGCGAAG_L007_R1_001.fastq.gz	/home/galland/data/20171123_F1_lines_LA1777_PI127826_Cv/14865_PI127826_F1_AGCGATAG-AGGCGAAG_L007_R2_001.fastq.gz
+Elite_01	/home/galland/data/20171123_F1_lines_LA1777_PI127826_Cv/LA1777_P1_Cv_4_TCTCGCGC-AGGCGAAG_L007_R1_001.fastq.gz	/home/galland/data/20171123_F1_lines_LA1777_PI127826_Cv/LA1777_P1_Cv_4_TCTCGCGC-AGGCGAAG_L007_R2_001.fastq.gz
+PI127826	/home/galland/data/20171123_F1_lines_LA1777_PI127826_Cv/PI26_P2_w_4_AGCGATAG-TATAGCCT_L005_R1_001.fastq.gz	/home/galland/data/20171123_F1_lines_LA1777_PI127826_Cv/PI26_P2_w_4_AGCGATAG-TATAGCCT_L005_R2_001.fastq.gz
+F2-127	/home/galland/data/20190325_F2_active_lazy_PI127826/F2-127_R1.fastq.gz	/home/galland/data/20190325_F2_active_lazy_PI127826/F2-127_R2.fastq.gz
+F2-151	/home/galland/data/20190325_F2_active_lazy_PI127826/F2-151_R1.fastq.gz	/home/galland/data/20190325_F2_active_lazy_PI127826/F2-151_R2.fastq.gz
+F2-28	/home/galland/data/20190325_F2_active_lazy_PI127826/F2-28_R1.fastq.gz	/home/galland/data/20190325_F2_active_lazy_PI127826/F2-28_R2.fastq.gz
+F2-411	/home/galland/data/20190325_F2_active_lazy_PI127826/F2-411_R1.fastq.gz	/home/galland/data/20190325_F2_active_lazy_PI127826/F2-411_R2.fastq.gz
+F2-445	/home/galland/data/20190325_F2_active_lazy_PI127826/F2-445_R1.fastq.gz	/home/galland/data/20190325_F2_active_lazy_PI127826/F2-445_R2.fastq.gz
+F2-73	/home/galland/data/20190325_F2_active_lazy_PI127826/F2-73_R1.fastq.gz	/home/galland/data/20190325_F2_active_lazy_PI127826/F2-73_R2.fastq.gz
