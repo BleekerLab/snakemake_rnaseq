@@ -26,7 +26,6 @@ units = pd.read_table(config["units"], dtype=str).set_index(["sample"], drop=Fal
 # create lists containing the sample names and conditions
 SAMPLES = units.index.get_level_values('sample').unique().tolist()
 samples = pd.read_csv(config["units"], dtype=str,index_col=0,sep="\t")
-#CONDITIONS = list(pd.read_table(config["units"])["condition"])
 samplefile = config["units"]
 
 
@@ -61,9 +60,16 @@ def get_trimmed(wildcards):
 #################
 # Desired outputs
 #################
+FASTQC = expand(RESULT_DIR + "fastp/{sample}.html", sample = SAMPLES)
+BAM_FILES = expand(RESULT_DIR + "star/{sample}_Aligned.sortedByCoord.out.bam", sample = SAMPLES)
+
+
 rule all:
     input:
-        RESULT_DIR + "raw_counts.txt"
+        FASTQC,
+        BAM_FILES, 
+        RESULT_DIR + "raw_counts.txt",
+        RESULT_DIR + "scaled_counts.txt"
     message:
         "Pipeline run complete!"
     shell:
@@ -189,6 +195,35 @@ rule create_counts_table:
     shell:
         "featureCounts -T {threads} -O -t exon -g transcript_id -F 'gtf' -a {input.gff} -o {output} {input.bams}"
 
+
+rule parse_raw_counts:
+    input:
+        RESULT_DIR + "raw_counts.txt"
+    output:
+        RESULT_DIR + "raw_counts.parsed.txt"
+    message: 
+        "Parsing the raw counts file for scaling (removal of comment and header renaming"
+    params:
+        tmp_file =             WORKING_DIR + "tmp.txt",
+        star_result_dir_name = RESULT_DIR + "star/"
+    shell:
+        "tail -n +2 {input} | "
+        "sed 's/_Aligned.sortedByCoord.out.bam//g' | "               # remove the file extension name in header
+        "sed 's#{params.star_result_dir_name}##g'  > {output} "      # remove the file path in header
+
+
 #########################################
 # Produce table of normalised gene counts
 #########################################
+
+
+
+rule normalise_raw_counts:
+    input:
+        raw = RESULT_DIR + "raw_counts.parsed.txt"
+    output:
+        norm = RESULT_DIR + "scaled_counts.txt"
+    message: 
+        "normalising raw counts the DESeq2 way"
+    shell:
+        "Rscript --vanilla scripts/deseq2_normalization.R {input.raw} {output.norm}" 
