@@ -68,8 +68,8 @@ rule all:
     input:
         FASTQC,
         BAM_FILES, 
-        RESULT_DIR + "raw_counts.txt",
-        RESULT_DIR + "scaled_counts.txt"
+        RESULT_DIR + "raw_counts.tsv",
+        RESULT_DIR + "scaled_counts.tsv"
     message:
         "Pipeline run complete!"
     shell:
@@ -190,7 +190,7 @@ rule create_counts_table:
         bams = expand(RESULT_DIR + "star/{sample}_Aligned.sortedByCoord.out.bam", sample = SAMPLES),
         gff  = config["refs"]["gtf"]
     output:
-        RESULT_DIR + "raw_counts.txt"
+        RESULT_DIR + "raw_counts.tsv"
     threads: 10
     shell:
         "featureCounts -T {threads} -O -t exon -g transcript_id -F 'gtf' -a {input.gff} -o {output} {input.bams}"
@@ -198,9 +198,9 @@ rule create_counts_table:
 
 rule parse_raw_counts:
     input:
-        RESULT_DIR + "raw_counts.txt"
+        RESULT_DIR + "raw_counts.tsv"
     output:
-        RESULT_DIR + "raw_counts.parsed.txt"
+        WORKING_DIR + "raw_counts.parsed.tsv"
     message: 
         "Parsing the raw counts file for scaling (removal of comment and header renaming"
     params:
@@ -216,13 +216,11 @@ rule parse_raw_counts:
 # Produce table of normalised gene counts
 #########################################
 
-
-
 rule normalise_raw_counts:
     input:
-        raw = RESULT_DIR + "raw_counts.parsed.txt"
+        raw = WORKING_DIR + "raw_counts.parsed.tsv"
     output:
-        norm = RESULT_DIR + "scaled_counts.txt"
+        norm = RESULT_DIR + "scaled_counts.tsv"
     message: 
         "normalising raw counts the DESeq2 way"
     shell:

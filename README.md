@@ -11,7 +11,6 @@
 	- [Output files](#output-files)
 	- [Prerequisites: what you should know before using this pipeline](#prerequisites-what-you-should-know-before-using-this-pipeline)
 	- [Content of this GitHub repository](#content-of-this-github-repository)
-	- [Pipeline dependencies](#pipeline-dependencies)
 - [Installation and usage \(local machine\)](#installation-and-usage-local-machine)
 	- [Installation](#installation)
 	- [Usage](#usage)
@@ -21,11 +20,11 @@
 - [Installation and usage \(HPC cluster\)](#installation-and-usage-hpc-cluster)
 	- [Installation](#installation-1)
 	- [Usage](#usage-1)
+- [Directed Acyclic Graph of jobs](#directed-acyclic-graph-of-jobs)
 - [References :green_book:](#references-green_book)
 	- [Authors](#authors)
-	- [Documentation](#documentation)
+	- [Pipeline dependencies](#pipeline-dependencies)
 	- [Acknowledgments :clap:](#acknowledgments-clap)
-- [Directed Acyclic Graph of jobs](#directed-acyclic-graph-of-jobs)
 
 <!-- /MarkdownTOC -->
 
@@ -75,18 +74,12 @@ Below is an example of a GTF file format. :warning: a real GTF file does not hav
 - `config/refs/`: a folder containing
   - a genomic reference in fasta format. The `S_lycopersicum_chromosomes.4.00.chrom1.fa` is placed for testing purposes.
   - a GTF annotation file. The `ITAG4.0_gene_models.sub.gtf` for testing purposes.
-- `fastq/`: a folder containing subsetted paired-end fastq files used to test locally the pipeline. Generated using [Seqtk](https://github.com/lh3/seqtk):
-`seqtk sample -s100 {inputfile(can be gzipped)} 250000 > {output(always gunzipped)}`
+- `.fastq/`: a (hidden) folder containing subsetted paired-end fastq files used to test locally the pipeline. Generated using [Seqtk](https://github.com/lh3/seqtk):
+`seqtk sample -s100 <inputfile> 250000 > <output file>`
 This folder should contain the `fastq` of the paired-end RNA-seq data, you want to run.
-- `envs/`: a folder containing the environments needed for the conda package manager. If run with the `--use-conda` command, Snakemake will install the necessary softwares and packages using the conda environment files.
-- `Dockerfile`: a Docker file used to build the docker image that, once run using `docker run bleekerlab/snakemake_rnaseq:4.7.12 --cores N` will trigger installation of the necessary softwares and run the Snakemake pipeline. Change `N` to a number of cores e.g. 1 or 10.  
-
-## Pipeline dependencies
-* [Snakemake](https://snakemake.readthedocs.io/en/stable/)
-* [fastp](https://github.com/OpenGene/fastp)
-* [STAR](https://github.com/alexdobin/STAR)   
-* [subread](http://subread.sourceforge.net/)  
-* [DESeq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html)
+- `envs/`: a folder containing the environments needed for the pipeline:
+  - The `environment.yaml` is used by the conda package manager to create a working environment (see below).
+  - The `Dockerfile` is a Docker file used to build the docker image by refering to the `environment.yaml` (see below). 
 
 
 # Installation and usage (local machine)
@@ -141,6 +134,8 @@ You will need a local copy of the GitHub `snakemake_rnaseq` repository on your m
 ## Usage
 See the detailed protocol [here](./hpc/README.md). 
 
+# Directed Acyclic Graph of jobs
+![dag](./dag.png)
 
 # References :green_book:
 
@@ -149,13 +144,15 @@ See the detailed protocol [here](./hpc/README.md).
 - Tijs Bliek, m.bliek@uva.nl
 - Frans van der Kloet f.m.vanderkloet@uva.nl
 
-## Documentation
-- [Snakemake](https://snakemake.readthedocs.io/en/stable/)
-- [STAR](https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf)
-- [fastp](https://github.com/OpenGene/fastp)
-- [Subread](http://bioinf.wehi.edu.au/subread-package/SubreadUsersGuide.pdf) 
+
+## Pipeline dependencies
+* [Snakemake](https://snakemake.readthedocs.io/en/stable/)
+* [fastp](https://github.com/OpenGene/fastp)
+* [STAR](https://github.com/alexdobin/STAR)   
+* [subread](http://subread.sourceforge.net/)  
+* [DESeq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html)
+
 
 ## Acknowledgments :clap:
+[Johannes Köster](https://johanneskoester.bitbucket.io/); creator of Snakemake. 
 
-# Directed Acyclic Graph of jobs
-![dag](./dag.png)

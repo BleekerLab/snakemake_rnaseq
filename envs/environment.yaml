@@ -9,3 +9,4 @@ dependencies:
   - star = 2.7.0b
   - fastp = 0.19.5
   - subread = 1.6.0
+  - r-tidyverse=1.2.1

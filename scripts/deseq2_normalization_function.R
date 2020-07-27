@@ -6,17 +6,15 @@
 #' @return A normalised matrix
 #' @export
 mor_normalization = function(data){
-  library(dplyr)
-  library(tibble)
 
   # take the log
   log_data = log(data) 
   
   # find the psuedo-references per sample by taking the geometric mean
-  log_data = log_data %>% 
-               rownames_to_column('gene') %>% 
-               mutate (gene_averages = rowMeans(log_data)) %>% 
-               filter(gene_averages != "-Inf")
+  log_data = log_data %>%
+    rownames_to_column('gene') %>%
+    mutate(gene_averages = rowMeans(log_data)) %>% 
+    filter(gene_averages != "-Inf")
   
   # the last columns is the pseudo-reference column 
   pseudo_column = ncol(log_data)
@@ -32,6 +30,8 @@ mor_normalization = function(data){
   
   # convert the median to a scaling factor
   scaling_factors = exp(sample_medians)
+  
+  #print(scaling_factors)
   
   # use scaling factors to scale the original data
   manually_normalized = sweep(data, 2, scaling_factors, "/")
