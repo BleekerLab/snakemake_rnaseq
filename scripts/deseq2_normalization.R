@@ -5,7 +5,14 @@ args = commandArgs(trailingOnly=TRUE)
 
 # import custom function and libraries
 source("scripts/deseq2_normalization_function.R")
-library(tidyverse)
+
+if ("tidyverse" %in% installed.packages()){
+	library(tidyverse)	
+} else {
+	install.packages("tidyverse")
+	library("tidyverse")
+}
+
 
 # Read parsed counts and remove unnecessary columns
 df <- read.delim(
