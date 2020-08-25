@@ -191,6 +191,7 @@ rule create_counts_table:
         gff  = config["refs"]["gtf"]
     output:
         RESULT_DIR + "raw_counts.tsv"
+    message: "Producing the table of raw counts"
     threads: 10
     shell:
         "featureCounts -T {threads} -O -t exon -g transcript_id -F 'gtf' -a {input.gff} -o {output} {input.bams}"
@@ -202,7 +203,7 @@ rule parse_raw_counts:
     output:
         WORKING_DIR + "raw_counts.parsed.tsv"
     message: 
-        "Parsing the raw counts file for scaling (removal of comment and header renaming"
+        "Parsing the raw counts file for scaling (removal of comment and header renaming)"
     params:
         tmp_file =             WORKING_DIR + "tmp.txt",
         star_result_dir_name = RESULT_DIR + "star/"
@@ -222,6 +223,6 @@ rule normalise_raw_counts:
     output:
         norm = RESULT_DIR + "scaled_counts.tsv"
     message: 
-        "normalising raw counts the DESeq2 way"
+        "Normalising raw counts the DESeq2 way"
     shell:
         "Rscript --vanilla scripts/deseq2_normalization.R {input.raw} {output.norm}" 
