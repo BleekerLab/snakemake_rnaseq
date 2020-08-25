@@ -9,7 +9,7 @@ source("scripts/deseq2_normalization_function.R")
 if ("tidyverse" %in% installed.packages()){
 	library(tidyverse)	
 } else {
-	install.packages("tidyverse")
+	install.packages("tidyverse", repos = "http://cran.us.r-project.org")
 	library("tidyverse")
 }
 
