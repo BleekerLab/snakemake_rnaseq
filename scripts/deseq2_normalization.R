@@ -6,13 +6,19 @@ args = commandArgs(trailingOnly=TRUE)
 # import custom function and libraries
 source("scripts/deseq2_normalization_function.R")
 
-if ("tidyverse" %in% installed.packages()){
-	library(tidyverse)	
+if ("dplyr" %in% installed.packages()){
+	library("dplyr")	
 } else {
-	install.packages("tidyverse", repos = "http://cran.us.r-project.org")
-	library("tidyverse")
+	install.packages("dplyr", repos = "http://cran.us.r-project.org")
+	library("dplyr")
 }
 
+if ("tibble" %in% installed.packages()){
+	library("tibble")	
+} else {
+	install.packages("tibble", repos = "http://cran.us.r-project.org")
+	library("tibble")
+}
 
 # Read parsed counts and remove unnecessary columns
 df <- read.delim(
@@ -21,12 +27,11 @@ df <- read.delim(
 
 df <- df %>% 
   dplyr::select(- Chr, - Start, - End, - Strand, - Length) %>% 
-  column_to_rownames("Geneid")
+  tibble::column_to_rownames("Geneid")
 
 normalised_data <- mor_normalization(df)
 
-normalised_data = rownames_to_column(normalised_data, 
-                                     var = "gene")
+normalised_data = tibble::rownames_to_column(normalised_data, var = "gene")
 
 write.table(
 	x = normalised_data, 
