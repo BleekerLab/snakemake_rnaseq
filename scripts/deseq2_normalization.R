@@ -26,7 +26,6 @@ df <- read.delim(
 	header = TRUE)
 
 df <- df %>% 
-  dplyr::select(- Chr, - Start, - End, - Strand, - Length) %>% 
   tibble::column_to_rownames("Geneid")
 
 normalised_data <- mor_normalization(df)

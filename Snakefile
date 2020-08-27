@@ -205,13 +205,9 @@ rule parse_raw_counts:
     message: 
         "Parsing the raw counts file for scaling (removal of comment and header renaming)"
     params:
-        tmp_file =             WORKING_DIR + "tmp.txt",
         star_result_dir_name = RESULT_DIR + "star/"
     shell:
-        "tail -n +2 {input} | "
-        "sed 's/_Aligned.sortedByCoord.out.bam//g' | "               # remove the file extension name in header
-        "sed 's#{params.star_result_dir_name}##g'  > {output} "      # remove the file path in header
-
+        "python scripts/parse_raw_counts.py {input} {params.star_result_dir_name} {output}"
 
 #########################################
 # Produce table of normalised gene counts
