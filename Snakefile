@@ -185,7 +185,7 @@ rule map_to_genome_using_STAR:
 
 rule generate_mapping_summary:
     input:
-        RESULT_DIR + "star/{sample}_Log.final.out"
+        expand(RESULT_DIR + "star/{sample}_Log.final.out", sample = SAMPLES)
     output:
         RESULT_DIR + "star/mapping_summary.tsv"
     message:
