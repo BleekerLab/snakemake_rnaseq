@@ -14,7 +14,7 @@ mapping_summary = sys.argv[2]
 # Reads each file. Add sample name in the column with values
 ############################################################
 
-list_of_logs = [f for f in os.listdir(directory_with_mapping_reports) if f.endswith("Log.final.out")]
+list_of_logs = [directory_with_mapping_reports + f for f in os.listdir(directory_with_mapping_reports) if f.endswith("Log.final.out")]
 list_of_logs.sort()
 
 
