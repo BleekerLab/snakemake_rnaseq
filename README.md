@@ -43,7 +43,7 @@ This pipeline analyses the raw RNA-seq data and produces two files containing th
 4. The raw counts will be scaled by a custom R function that implements the `DESeq2` median of ratios method to generate the scaled ("normalized") counts. 
 
 ## Input files
-* __RNA-seq fastq files__ as listed in the `config/samples.tsv` file.
+* __RNA-seq fastq files__ as listed in the `config/samples.tsv` file. Specify a sample name (e.g. "Sample_A") in the `sample` column and the paths to the forward read (`fq1`) and to the reverse read (`fq2`). If you have single-end reads, leave the `fq2` column empty. 
 * __A genomic reference in FASTA format__. For instance, a fasta file containing the 12 chromosomes of tomato (*Solanum lycopersicum*).
 * __A genome annotation file in the [GTF format](https://useast.ensembl.org/info/website/upload/gff.html)__. You can convert a GFF annotation file format into GTF with the [gffread program from Cufflinks](http://ccb.jhu.edu/software/stringtie/gff.shtml): `gffread my.gff3 -T -o my.gtf`. :warning: for featureCounts to work, the _feature_ in the GTF file should be `exon` while the _meta-feature_ has to be `transcript_id`. 
 
