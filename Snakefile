@@ -62,14 +62,17 @@ def get_trimmed(wildcards):
 #################
 FASTQC = expand(RESULT_DIR + "fastp/{sample}.html", sample = SAMPLES)
 BAM_FILES = expand(RESULT_DIR + "star/{sample}_Aligned.sortedByCoord.out.bam", sample = SAMPLES)
+MAPPING_REPORT = RESULT_DIR + "star/mapping_summary.tsv"
 
 
 rule all:
     input:
         FASTQC,
         BAM_FILES, 
+        MAPPING_REPORT,
         RESULT_DIR + "raw_counts.tsv",
-        RESULT_DIR + "scaled_counts.tsv"
+        RESULT_DIR + "scaled_counts.tsv",
+
     message:
         "Pipeline run complete!"
     shell:
@@ -132,14 +135,14 @@ rule fastp:
             shell("fastp --thread {threads}  --html {output.html} --json {output.json} \
             --qualified_quality_phred {params.qualified_quality_phred} \
             --in1 {input} --out1 {output} \
-            2> {log}; \
+            2>{log}; \
             touch {output.fq2}")
         else:
             shell("fastp --thread {threads}  --html {output.html} --json {output.json} \
             --qualified_quality_phred {params.qualified_quality_phred} \
             --detect_adapter_for_pe \
             --in1 {input[0]} --in2 {input[1]} --out1 {output.fq1} --out2 {output.fq2}; \
-            2> {log}")
+            2>{log}")
 
 
 
@@ -154,7 +157,7 @@ rule map_to_genome_using_STAR:
         reverse = WORKING_DIR + "trimmed/" + "{sample}_R2_trimmed.fq.gz"
     output:
         RESULT_DIR + "star/{sample}_Aligned.sortedByCoord.out.bam",
-        RESULT_DIR +      "star/{sample}_Log.final.out"
+        RESULT_DIR + "star/{sample}_Log.final.out"
     message:
         "mapping {wildcards.sample} reads to genome"
     params:
@@ -174,12 +177,21 @@ rule map_to_genome_using_STAR:
         if sample_is_single_end(params.sample_name):
             shell("STAR --genomeDir {params.genome_index} --readFilesIn {input.forward} --readFilesCommand zcat --outFilterMultimapNmax {params.multimappers} \
             --outFilterMismatchNmax {params.maxmismatches} --alignMatesGapMax {params.matesgap} --alignIntronMax {params.intronmax}  \
-            --outFilterMatchNminOverLread \ {params.matchNminoverLread} --alignEndsType EndToEnd --runThreadN {threads}  --outReadsUnmapped {params.unmapped} \
+            --outFilterMatchNminOverLread  {params.matchNminoverLread} --alignEndsType EndToEnd --runThreadN {threads}  --outReadsUnmapped {params.unmapped} \
             --outFileNamePrefix {params.prefix} --outSAMtype {params.outSamType}  --outSAMattributes {params.outSAMattributes}")  
         else:
             shell("STAR --genomeDir {params.genome_index} --readFilesIn {input.forward} {input.reverse} --readFilesCommand zcat --outFilterMultimapNmax {params.multimappers} --outFilterMismatchNmax {params.maxmismatches} --alignMatesGapMax {params.matesgap} --alignIntronMax {params.intronmax} \
 --outFilterMatchNminOverLread {params.matchNminoverLread} --alignEndsType EndToEnd  --runThreadN {threads}  --outReadsUnmapped {params.unmapped} --outFileNamePrefix {params.prefix}  --outSAMtype {params.outSamType} --outSAMattributes {params.outSAMattributes}")         
 
+rule generate_mapping_summary:
+    output:
+        RESULT_DIR + "star/mapping_summary.tsv"
+    message:
+        "Concatenating STAR mapping report and generating mapping summary."
+    params:
+        directory_with_mapping_reports = RESULT_DIR + "star/"
+    shell:
+        "python scripts/generate_mapping_summary.py --directory {params.directory_with_mapping_reports} --outfile {output}"
 
 ##################################
 # Produce table of raw gene counts
