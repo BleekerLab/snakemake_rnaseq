@@ -184,6 +184,8 @@ rule map_to_genome_using_STAR:
 --outFilterMatchNminOverLread {params.matchNminoverLread} --alignEndsType EndToEnd  --runThreadN {threads}  --outReadsUnmapped {params.unmapped} --outFileNamePrefix {params.prefix}  --outSAMtype {params.outSamType} --outSAMattributes {params.outSAMattributes}")         
 
 rule generate_mapping_summary:
+    input:
+        directory(RESULT_DIR + "star/")
     output:
         RESULT_DIR + "star/mapping_summary.tsv"
     message:
@@ -191,7 +193,7 @@ rule generate_mapping_summary:
     params:
         directory_with_mapping_reports = RESULT_DIR + "star/"
     shell:
-        "python scripts/generate_mapping_summary.py --directory {params.directory_with_mapping_reports} --outfile {output}"
+        "python scripts/generate_mapping_summary.py {params.directory_with_mapping_reports} {output}"
 
 ##################################
 # Produce table of raw gene counts
