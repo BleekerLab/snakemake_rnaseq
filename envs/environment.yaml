@@ -5,7 +5,7 @@ channels:
   - defaults
 dependencies:
   - pandas = 0.23
-  - snakemake-minimal = 5.7.0
+  - snakemake = 5.7.0
   - star = 2.7.0b
   - fastp = 0.19.5
   - subread = 1.6.0
