@@ -23,12 +23,11 @@ An example script called `my_snakemake_job.sh` could look like this:
 
 ```
 #!/bin/bash          
-#SBATCH -t 02:00:00 
+#SBATCH -t 00:05:00 
 #SBATCH -p short 
-#SBATCH --mail-type=BEGIN,END
 #SBATCH --mail-user=<a valid email address> 
 #SBATCH --nodes 1
-#SBATCH --tasks-per-node 3
+#SBATCH --tasks-per-node 1
 #SBATCH --cpus-per-tasks 20
 
 module load singularity
@@ -37,7 +36,7 @@ singularity run envs/snakemake_rnaseq_latest.sif --cores 20
 ```
 
 Remarks:
-- In this example script, we would use a maximum number of 1 x 3 x 20 = 60 CPUs.
+- In this example script, we would use a maximum number of 1 x 1 x 20 = 20 CPUs.
 - The Singularity image `snakemake_rnaseq_latest.sif` file was obtained by pulling a docker image: `singularity pull docker://bleekerlab/snakemake_rnaseq:4.7.12`  that Singularity then converts to a single `.sif` file.
 - :warning: make sure that you specify the `results` and `scratch` directory options in the `config/config.yaml` file accordingly.  Use the $TMPDIR and the $HOME environment variables. 
 
