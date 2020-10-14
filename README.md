@@ -110,11 +110,16 @@ While a `conda` environment will in most cases work just fine, Docker is the rec
 1. Install Docker desktop for your operating system.
 2. Open a Shell window and type: `docker pull bleekerlab/snakemake_rnaseq:4.7.12` to retrieve a Docker image that includes the pipeline required softwares (Snakemake and conda and many others).
 3. Run the pipeline on your system with:
-`docker run --rm -v $PWD:/home/snakemake/ bleekerlab/snakemake_rnaseq:4.7.12` and add any options for snakemake (`-n`, `--cores 10`) etc.  
+`docker run --rm -v $PWD:/home/snakemake/ bleekerlab/snakemake_rnaseq:4.7.12` and add any options for snakemake (`-n`, `--cores 10`) etc. 
+The image was built using a [Dockerfile](envs/Dockerfile) based on the [4.7.12 Miniconda3 official Docker image](https://hub.docker.com/r/continuumio/miniconda3/tags). 
 
-This will link your working directory (`$PWD`) to a directory called `/home/snakemake/` inside the container. Results will be written to a folder named `$PWD/results/` (you can change `results` to something you like in the `result_dir` parameter of the `config.yaml`).
+### :whale: Option 3: Singularity 
+1. Install singularity
+2. Open a Shell window and type: `singularity run docker://bleekerlab/snakemake_rnaseq:4.7.12` to retrieve a Docker image that includes the pipeline required software (Snakemake and conda and many others).
+3. Run the pipeline on your system with
+`singularity run snakemake_rnaseq_4.7.12.sif` and add any options for snakemake (`-n`, `--cores 10`) etc. 
+The directory where the sif file is stored will automatically be mapped to `/home/snakemake`. Results will be written to a folder named `$PWD/results/` (you can change `results` to something you like in the `result_dir` parameter of the `config.yaml`).
 
-The image was built using a [Dockerfile](envs/Dockerfile) based on the [4.7.12 Miniconda3 official Docker image](https://hub.docker.com/r/continuumio/miniconda3/tags).  
 
 ## Dry run
 - With conda: use the `snakemake -np` to perform a dry run that prints out the rules and commands.
