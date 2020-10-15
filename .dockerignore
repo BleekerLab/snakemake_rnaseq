@@ -1,0 +1,26 @@
+# ignore .git and cache folders
+.git/
+.gitignore
+.cache/
+
+# ignore all markdown files
+*.md
+
+# ignore test fastq files
+.fastq/
+
+
+# R project info
+*.Rproj.user/ 
+*Rproj
+
+# Run related folders and files
+.snakemake/
+_STARtmp/
+config/
+dag.png
+results/
+temp/
+
+# others
+hpc/ 

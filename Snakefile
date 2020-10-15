@@ -235,4 +235,4 @@ rule normalise_raw_counts:
     message: 
         "Normalising raw counts the DESeq2 way"
     shell:
-        "Rscript --vanilla scripts/deseq2_normalization.R {input.raw} {output.norm}" 
+        "Rscript --vanilla envs/deseq2_normalization.R {input.raw} {output.norm}" 
