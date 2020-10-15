@@ -8,3 +8,4 @@ temp/
 *.json
 fastq/
 .Rproj.user
+snakemake_rnaseq.Rproj
