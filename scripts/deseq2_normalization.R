@@ -3,8 +3,8 @@
 # Rscript --vanilla deseq2_normalization.R raw_counts.txt scaled_counts.txt
 args = commandArgs(trailingOnly=TRUE)
 
+library("tidyverse")
 
-# i want to prove that Frans is wrong
 
 ######################################
 # import custom function and libraries
