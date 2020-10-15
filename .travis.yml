@@ -6,8 +6,6 @@ python:
 services:
   - docker
 
-before_install:
-  - docker pull bleekerlab/snakemake_rnaseq:0.3.2
-
 script:
+  - docker pull bleekerlab/snakemake_rnaseq:0.3.2
   - docker run -v $PWD:/home/snakemake bleekerlab/snakemake_rnaseq:0.3.2 -n 
