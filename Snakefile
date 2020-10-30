@@ -56,6 +56,23 @@ def get_trimmed(wildcards):
     else:
         return [WORKING_DIR + "trimmed/" + wildcards.sample + "_R1_trimmed.fq.gz", WORKING_DIR + "trimmed/" + wildcards.sample + "_R2_trimmed.fq.gz"]
 
+def get_trim_names(wildcards):
+    """ This function checks if sample is paired end or single end
+    and returns the wright syntex for the in and output files """
+    if sample_is_single_end(wildcards.sample):
+        inFile = samples.loc[(wildcards.sample), ["fq1"]].dropna()
+        return "--in1 " + inFile + " --out1 " + WORKING_DIR + "trimmed/" + wildcards.sample + "_R1_trimmed.fq.gz" 
+    else:
+        inFile = samples.loc[(wildcards.sample), ["fq1", "fq2"]].dropna()
+        return "--in1 " + inFile[0] + " --in2 " + inFile[1] + " --out1 " + WORKING_DIR + "trimmed/" + wildcards.sample + "_R1_trimmed.fq.gz --out2 "  + WORKING_DIR + "trimmed/" + wildcards.sample + "_R2_trimmed.fq.gz"
+
+def get_star_names(wildcards):
+    """ This function checks if sample is paired end or single end
+    and returns the wright syntex for the in and output files """
+    if sample_is_single_end(wildcards.sample):
+        return WORKING_DIR + "trimmed/" + wildcards.sample + "_R1_trimmed.fq.gz"     
+    else:
+        return WORKING_DIR + "trimmed/" + wildcards.sample + "_R1_trimmed.fq.gz "  + WORKING_DIR + "trimmed/" + wildcards.sample + "_R2_trimmed.fq.gz"
 
 #################
 # Desired outputs
@@ -129,21 +146,14 @@ rule fastp:
         RESULT_DIR + "fastp/{sample}.log.txt"
     params:
         sampleName = "{sample}",
+        inAndOut =  get_trim_names,
         qualified_quality_phred = config["fastp"]["qualified_quality_phred"]
-    run:
-        if sample_is_single_end(params.sampleName):
-            shell("fastp --thread {threads}  --html {output.html} --json {output.json} \
-            --qualified_quality_phred {params.qualified_quality_phred} \
-            --in1 {input} --out1 {output} \
-            2>{log}; \
-            touch {output.fq2}")
-        else:
-            shell("fastp --thread {threads}  --html {output.html} --json {output.json} \
-            --qualified_quality_phred {params.qualified_quality_phred} \
-            --detect_adapter_for_pe \
-            --in1 {input[0]} --in2 {input[1]} --out1 {output.fq1} --out2 {output.fq2}; \
-            2>{log}")
-
+    shell:
+        "touch {output.fq2};\
+        fastp --thread {threads}  --html {output.html} --json {output.json} \
+        --qualified_quality_phred {params.qualified_quality_phred} \
+        {params.inAndOut} \
+        2>{log}"
 
 
 #########################
@@ -161,7 +171,8 @@ rule map_to_genome_using_STAR:
     message:
         "mapping {wildcards.sample} reads to genome"
     params:
-        sample_name = "{sample}",
+        sample_name =        "{sample}",
+        inFiles =            get_star_names,
         prefix =             RESULT_DIR + "star/{sample}_",
         maxmismatches =      config["star"]["mismatches"],
         unmapped =           config["star"]["unmapped"]   ,
@@ -173,15 +184,12 @@ rule map_to_genome_using_STAR:
         matesgap =           config["star"]["matesgap"],
         genome_index =       WORKING_DIR + "genome/"
     threads: 10
-    run:
-        if sample_is_single_end(params.sample_name):
-            shell("STAR --genomeDir {params.genome_index} --readFilesIn {input.forward} --readFilesCommand zcat --outFilterMultimapNmax {params.multimappers} \
-            --outFilterMismatchNmax {params.maxmismatches} --alignMatesGapMax {params.matesgap} --alignIntronMax {params.intronmax}  \
-            --outFilterMatchNminOverLread  {params.matchNminoverLread} --alignEndsType EndToEnd --runThreadN {threads}  --outReadsUnmapped {params.unmapped} \
-            --outFileNamePrefix {params.prefix} --outSAMtype {params.outSamType}  --outSAMattributes {params.outSAMattributes}")  
-        else:
-            shell("STAR --genomeDir {params.genome_index} --readFilesIn {input.forward} {input.reverse} --readFilesCommand zcat --outFilterMultimapNmax {params.multimappers} --outFilterMismatchNmax {params.maxmismatches} --alignMatesGapMax {params.matesgap} --alignIntronMax {params.intronmax} \
---outFilterMatchNminOverLread {params.matchNminoverLread} --alignEndsType EndToEnd  --runThreadN {threads}  --outReadsUnmapped {params.unmapped} --outFileNamePrefix {params.prefix}  --outSAMtype {params.outSamType} --outSAMattributes {params.outSAMattributes}")         
+    shell:
+        "STAR --genomeDir {params.genome_index} --readFilesIn {params.inFiles} --readFilesCommand zcat --outFilterMultimapNmax {params.multimappers} \
+        --outFilterMismatchNmax {params.maxmismatches} --alignMatesGapMax {params.matesgap} --alignIntronMax {params.intronmax}  \
+        --outFilterMatchNminOverLread  {params.matchNminoverLread} --alignEndsType EndToEnd --runThreadN {threads}  --outReadsUnmapped {params.unmapped} \
+        --outFileNamePrefix {params.prefix} --outSAMtype {params.outSamType}  --outSAMattributes {params.outSAMattributes}"
+
 
 rule generate_mapping_summary:
     input:
