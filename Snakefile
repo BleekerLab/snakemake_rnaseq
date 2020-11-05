@@ -114,6 +114,7 @@ rule star_index:
         sjdb_overhang = config["star_index"]["sjdbOverhang"],
         limit_genome_generate_ram = config["star_index"]["limitGenomeGenerateRAM"]
     threads: 10
+    resources: mem_mb=100000
     shell:
         "mkdir -p {params.genome_dir}; " # if directory not created STAR will ask for it
         "STAR --runThreadN {threads} "
@@ -144,6 +145,7 @@ rule fastp:
         sampleName = "{sample}",
         in_and_out_files =  get_trim_names,
         qualified_quality_phred = config["fastp"]["qualified_quality_phred"]
+    resources: cpus=10
     shell:
         "touch {output.fq2};\
         fastp --thread {threads}  --html {output.html} --json {output.json} \
@@ -180,6 +182,7 @@ rule map_to_genome_using_STAR:
         matesgap              =  config["star"]["matesgap"],
         genome_index          =  WORKING_DIR + "genome/"
     threads: 10
+    resources: cpus=10
     shell:
         "STAR --genomeDir {params.genome_index} --readFilesIn {params.star_input_file_names} --readFilesCommand zcat --outFilterMultimapNmax {params.multimappers} \
         --outFilterMismatchNmax {params.maxmismatches} --alignMatesGapMax {params.matesgap} --alignIntronMax {params.intronmax}  \
