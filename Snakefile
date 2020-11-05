@@ -41,21 +41,35 @@ def sample_is_single_end(sample):
         return pd.isnull(samples.loc[(sample), "fq2"])
 
 def get_fastq(wildcards):
-    """ This function checks if the sample has paired end or single end reads
-    and returns 1 or 2 names of the fastq files """
+    """This function checks if the sample has paired end or single end reads and returns 1 or 2 names of the fastq files"""
     if sample_is_single_end(wildcards.sample):
         return samples.loc[(wildcards.sample), ["fq1"]].dropna()
     else:
         return samples.loc[(wildcards.sample), ["fq1", "fq2"]].dropna()
 
-def get_trimmed(wildcards):
-    """ This function checks if sample is paired end or single end
-    and returns 1 or 2 names of the trimmed fastq files """
+def get_trim_names(wildcards):
+    """
+    This function:
+      1. Checks if the sample is paired end or single end
+      2. Returns the correct input and output trimmed file names. 
+    """
     if sample_is_single_end(wildcards.sample):
-        return WORKING_DIR + "trimmed/" + wildcards.sample + "_R1_trimmed.fq.gz"
+        inFile = samples.loc[(wildcards.sample), ["fq1"]].dropna()
+        return "--in1 " + inFile + " --out1 " + WORKING_DIR + "trimmed/" + wildcards.sample + "_R1_trimmed.fq.gz" 
     else:
-        return [WORKING_DIR + "trimmed/" + wildcards.sample + "_R1_trimmed.fq.gz", WORKING_DIR + "trimmed/" + wildcards.sample + "_R2_trimmed.fq.gz"]
+        inFile = samples.loc[(wildcards.sample), ["fq1", "fq2"]].dropna()
+        return "--in1 " + inFile[0] + " --in2 " + inFile[1] + " --out1 " + WORKING_DIR + "trimmed/" + wildcards.sample + "_R1_trimmed.fq.gz --out2 "  + WORKING_DIR + "trimmed/" + wildcards.sample + "_R2_trimmed.fq.gz"
 
+def get_star_names(wildcards):
+    """
+    This function:
+      1. Checks if the sample is paired end or single end.
+      2. Returns the correct input file names for STAR mapping step.
+    """
+    if sample_is_single_end(wildcards.sample):
+        return WORKING_DIR + "trimmed/" + wildcards.sample + "_R1_trimmed.fq.gz"     
+    else:
+        return WORKING_DIR + "trimmed/" + wildcards.sample + "_R1_trimmed.fq.gz " + WORKING_DIR + "trimmed/" + wildcards.sample + "_R2_trimmed.fq.gz"
 
 #################
 # Desired outputs
@@ -71,10 +85,9 @@ rule all:
         BAM_FILES, 
         MAPPING_REPORT,
         RESULT_DIR + "raw_counts.tsv",
-        RESULT_DIR + "scaled_counts.tsv",
-
+        RESULT_DIR + "scaled_counts.tsv"
     message:
-        "Pipeline run complete!"
+        "RNA-seq pipeline run complete!"
     shell:
         "cp config/config.yaml {RESULT_DIR};"
         "cp config/samples.tsv {RESULT_DIR}"
@@ -129,21 +142,14 @@ rule fastp:
         RESULT_DIR + "fastp/{sample}.log.txt"
     params:
         sampleName = "{sample}",
+        in_and_out_files =  get_trim_names,
         qualified_quality_phred = config["fastp"]["qualified_quality_phred"]
-    run:
-        if sample_is_single_end(params.sampleName):
-            shell("fastp --thread {threads}  --html {output.html} --json {output.json} \
-            --qualified_quality_phred {params.qualified_quality_phred} \
-            --in1 {input} --out1 {output} \
-            2>{log}; \
-            touch {output.fq2}")
-        else:
-            shell("fastp --thread {threads}  --html {output.html} --json {output.json} \
-            --qualified_quality_phred {params.qualified_quality_phred} \
-            --detect_adapter_for_pe \
-            --in1 {input[0]} --in2 {input[1]} --out1 {output.fq1} --out2 {output.fq2}; \
-            2>{log}")
-
+    shell:
+        "touch {output.fq2};\
+        fastp --thread {threads}  --html {output.html} --json {output.json} \
+        --qualified_quality_phred {params.qualified_quality_phred} \
+        {params.in_and_out_files} \
+        2>{log}"
 
 
 #########################
@@ -153,35 +159,33 @@ rule fastp:
 rule map_to_genome_using_STAR:
     input:
         genome_index = rules.star_index.output,
-        forward = WORKING_DIR + "trimmed/" + "{sample}_R1_trimmed.fq.gz",
-        reverse = WORKING_DIR + "trimmed/" + "{sample}_R2_trimmed.fq.gz"
+        forward_read = WORKING_DIR + "trimmed/" + "{sample}_R1_trimmed.fq.gz",
+        reverse_read = WORKING_DIR + "trimmed/" + "{sample}_R2_trimmed.fq.gz"
     output:
         RESULT_DIR + "star/{sample}_Aligned.sortedByCoord.out.bam",
         RESULT_DIR + "star/{sample}_Log.final.out"
     message:
         "mapping {wildcards.sample} reads to genome"
     params:
-        sample_name = "{sample}",
-        prefix =             RESULT_DIR + "star/{sample}_",
-        maxmismatches =      config["star"]["mismatches"],
-        unmapped =           config["star"]["unmapped"]   ,
-        multimappers =       config["star"]["multimappers"],
-        matchNminoverLread = config["star"]["matchminoverlengthread"],
-        outSamType =         config["star"]["samtype"],
-        outSAMattributes =   config["star"]["samattributes"],
-        intronmax =          config["star"]["intronmax"],
-        matesgap =           config["star"]["matesgap"],
-        genome_index =       WORKING_DIR + "genome/"
+        sample_name           =  "{sample}",
+        star_input_file_names =  get_star_names,
+        prefix                =  RESULT_DIR + "star/{sample}_",
+        maxmismatches         =  config["star"]["mismatches"],
+        unmapped              =  config["star"]["unmapped"]   ,
+        multimappers          =  config["star"]["multimappers"],
+        matchNminoverLread    =  config["star"]["matchminoverlengthread"],
+        outSamType            =  config["star"]["samtype"],
+        outSAMattributes      =  config["star"]["samattributes"],
+        intronmax             =  config["star"]["intronmax"],
+        matesgap              =  config["star"]["matesgap"],
+        genome_index          =  WORKING_DIR + "genome/"
     threads: 10
-    run:
-        if sample_is_single_end(params.sample_name):
-            shell("STAR --genomeDir {params.genome_index} --readFilesIn {input.forward} --readFilesCommand zcat --outFilterMultimapNmax {params.multimappers} \
-            --outFilterMismatchNmax {params.maxmismatches} --alignMatesGapMax {params.matesgap} --alignIntronMax {params.intronmax}  \
-            --outFilterMatchNminOverLread  {params.matchNminoverLread} --alignEndsType EndToEnd --runThreadN {threads}  --outReadsUnmapped {params.unmapped} \
-            --outFileNamePrefix {params.prefix} --outSAMtype {params.outSamType}  --outSAMattributes {params.outSAMattributes}")  
-        else:
-            shell("STAR --genomeDir {params.genome_index} --readFilesIn {input.forward} {input.reverse} --readFilesCommand zcat --outFilterMultimapNmax {params.multimappers} --outFilterMismatchNmax {params.maxmismatches} --alignMatesGapMax {params.matesgap} --alignIntronMax {params.intronmax} \
---outFilterMatchNminOverLread {params.matchNminoverLread} --alignEndsType EndToEnd  --runThreadN {threads}  --outReadsUnmapped {params.unmapped} --outFileNamePrefix {params.prefix}  --outSAMtype {params.outSamType} --outSAMattributes {params.outSAMattributes}")         
+    shell:
+        "STAR --genomeDir {params.genome_index} --readFilesIn {params.star_input_file_names} --readFilesCommand zcat --outFilterMultimapNmax {params.multimappers} \
+        --outFilterMismatchNmax {params.maxmismatches} --alignMatesGapMax {params.matesgap} --alignIntronMax {params.intronmax}  \
+        --outFilterMatchNminOverLread  {params.matchNminoverLread} --alignEndsType EndToEnd --runThreadN {threads}  --outReadsUnmapped {params.unmapped} \
+        --outFileNamePrefix {params.prefix} --outSAMtype {params.outSamType}  --outSAMattributes {params.outSAMattributes}"
+
 
 rule generate_mapping_summary:
     input:
@@ -235,4 +239,4 @@ rule normalise_raw_counts:
     message: 
         "Normalising raw counts the DESeq2 way"
     shell:
-        "Rscript --vanilla envs/deseq2_normalization.R {input.raw} {output.norm}" 
+        "Rscript --vanilla scripts/deseq2_normalization.R {input.raw} {output.norm}" 
