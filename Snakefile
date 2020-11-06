@@ -55,7 +55,7 @@ def get_trim_names(wildcards):
     """
     if sample_is_single_end(wildcards.sample):
         inFile = samples.loc[(wildcards.sample), ["fq1"]].dropna()
-        return "--in1 " + inFile + " --out1 " + WORKING_DIR + "trimmed/" + wildcards.sample + "_R1_trimmed.fq.gz" 
+        return "--in1 " + inFile[0] + " --out1 " + WORKING_DIR + "trimmed/" + wildcards.sample + "_R1_trimmed.fq.gz" 
     else:
         inFile = samples.loc[(wildcards.sample), ["fq1", "fq2"]].dropna()
         return "--in1 " + inFile[0] + " --in2 " + inFile[1] + " --out1 " + WORKING_DIR + "trimmed/" + wildcards.sample + "_R1_trimmed.fq.gz --out2 "  + WORKING_DIR + "trimmed/" + wildcards.sample + "_R2_trimmed.fq.gz"
