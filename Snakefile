@@ -211,7 +211,7 @@ rule create_counts_table:
         bams = expand(RESULT_DIR + "star/{sample}_Aligned.sortedByCoord.out.bam", sample = SAMPLES),
         gff  = config["refs"]["gtf"]
     output:
-        RESULT_DIR + "raw_counts.tsv"
+        WORKING_DIR + "raw_counts.tsv"
     message: "Producing the table of raw counts"
     threads: 10
     shell:
@@ -220,9 +220,9 @@ rule create_counts_table:
 
 rule parse_raw_counts:
     input:
-        RESULT_DIR + "raw_counts.tsv"
+        WORKING_DIR + "raw_counts.tsv"
     output:
-        WORKING_DIR + "raw_counts.parsed.tsv"
+        RESULT_DIR + "raw_counts.parsed.tsv"
     message: 
         "Parsing the raw counts file for scaling (removal of comment and header renaming)"
     params:
@@ -236,7 +236,7 @@ rule parse_raw_counts:
 
 rule normalise_raw_counts:
     input:
-        raw = WORKING_DIR + "raw_counts.parsed.tsv"
+        raw = RESULT_DIR + "raw_counts.parsed.tsv"
     output:
         norm = RESULT_DIR + "scaled_counts.tsv"
     message: 
