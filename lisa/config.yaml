@@ -7,3 +7,4 @@ max-status-checks-per-second: 10
 local-cores: 1
 latency-wait: 60
 jobs: 10
+default-resources: [cpus=1, mem_mb=2000, time_min=60]
