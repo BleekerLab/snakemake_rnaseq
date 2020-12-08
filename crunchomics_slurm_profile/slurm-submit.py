@@ -10,7 +10,7 @@ import slurm_utils
 
 # cookiecutter arguments
 SBATCH_DEFAULTS = """ cluster=crunchomics"""
-CLUSTER_CONFIG = ""
+CLUSTER_CONFIG = "cluster_config.yaml"
 ADVANCED_ARGUMENT_CONVERSION = {"yes": True, "no": False}[
     "no"
 ]

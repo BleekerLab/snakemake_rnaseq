@@ -1,0 +1,9 @@
+__default__:
+    account: mgallan1                   # your hpc account
+    partition: normal                   # the partition you use
+    mail-user: m.galland@uva.nl         # your email (optional!)
+    time: 360                           # default time (minutes)
+    nodes: 1
+    ntasks: 1
+    mem: 1GB                            # default memory
+
