@@ -84,7 +84,7 @@ rule all:
         FASTQC,
         BAM_FILES, 
         MAPPING_REPORT,
-        RESULT_DIR + "raw_counts.tsv",
+        RESULT_DIR + "raw_counts.parsed.tsv",
         RESULT_DIR + "scaled_counts.tsv"
     message:
         "RNA-seq pipeline run complete!"
