@@ -74,14 +74,14 @@ def get_star_names(wildcards):
 #################
 # Desired outputs
 #################
-FASTQC = expand(RESULT_DIR + "fastp/{sample}.html", sample = SAMPLES)
+MULTIQC = RESULT_DIR + "multiqc_report.html"
 BAM_FILES = expand(RESULT_DIR + "star/{sample}_Aligned.sortedByCoord.out.bam", sample = SAMPLES)
 MAPPING_REPORT = RESULT_DIR + "star/mapping_summary.tsv"
 
 
 rule all:
     input:
-        FASTQC,
+        MULTIQC,
         BAM_FILES, 
         MAPPING_REPORT,
         RESULT_DIR + "raw_counts.parsed.tsv",
@@ -90,7 +90,7 @@ rule all:
         "RNA-seq pipeline run complete!"
     shell:
         "cp config/config.yaml {RESULT_DIR};"
-        "cp config/samples.tsv {RESULT_DIR}"
+        "cp config/samples.tsv {RESULT_DIR};"
 
 #######
 # Rules
@@ -137,8 +137,8 @@ rule fastp:
     output:
         fq1  = WORKING_DIR + "trimmed/" + "{sample}_R1_trimmed.fq.gz",
         fq2  = WORKING_DIR + "trimmed/" + "{sample}_R2_trimmed.fq.gz",
-        html = RESULT_DIR + "fastp/{sample}.html",
-        json = RESULT_DIR + "fastp/{sample}.json"
+        html = WORKING_DIR + "fastp/{sample}_fastp.html",
+        json = WORKING_DIR + "fastp/{sample}_fastp.json"
     message:"trimming {wildcards.sample} reads"
     threads: 10
     log:
@@ -155,6 +155,18 @@ rule fastp:
         {params.in_and_out_files} \
         2>{log}"
 
+rule multiqc:
+    input:
+        expand(WORKING_DIR + "fastp/{sample}_fastp.json", sample = SAMPLES)
+    output:
+        RESULT_DIR + "multiqc_report.html"
+    params:
+        fastp_directory = WORKING_DIR + "fastp/",
+        outdir = RESULT_DIR
+    shell:
+        "multiqc --force "
+        "--outdir {params.outdir} "
+        "{params.fastp_directory} "
 
 #########################
 # RNA-Seq read alignement
