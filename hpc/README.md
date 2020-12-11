@@ -4,6 +4,7 @@
 
 - [SURFsara LISA cluster](#surfsara-lisa-cluster)
 	- [Creating the batch script](#creating-the-batch-script)
+- [Crunchomics](#crunchomics)
 - [Useful links](#useful-links)
 
 <!-- /MarkdownTOC -->
@@ -39,6 +40,13 @@ Remarks:
 - In this example script, we would use a maximum number of 1 x 1 x 10 = 10 CPUs.
 - The Singularity image `snakemake_rnaseq_4.7.12.sif` file was obtained by pulling a docker image: `singularity pull docker://bleekerlab/snakemake_rnaseq:4.7.12`  that Singularity then converts to a single `.sif` file.
 - :warning: make sure that you specify the `results` and `working_dir` directory options in the `config/config.yaml` file accordingly.  Use the $TMPDIR and the $HOME environment variables. 
+
+# Crunchomics
+
+`salloc -N 1 -w omics-cn005 --cpus-per-task 30 --mem=30G`
+
+`srun snakemake --cores 30`
+
 
 # Useful links
 - [Snakemake with SLURM](https://accio.github.io/programming/2020/06/16/Snakemake-with-slurm.html)
