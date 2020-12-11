@@ -112,7 +112,8 @@ rule star_index:
     params:
         genome_dir = WORKING_DIR + "genome/",
         sjdb_overhang = config["star_index"]["sjdbOverhang"],
-        limit_genome_generate_ram = config["star_index"]["limitGenomeGenerateRAM"]
+        limit_genome_generate_ram = config["star_index"]["limitGenomeGenerateRAM"],
+        genome_sa = config["star_index"]["genomeSAindexNbases"]
     threads: 10
     resources: mem_mb=100000
     shell:
@@ -123,7 +124,8 @@ rule star_index:
         "--genomeFastaFiles {input.fasta} "
         "--sjdbGTFfile {input.gtf} "
         "--sjdbOverhang {params.sjdb_overhang} "
-        "--limitGenomeGenerateRAM {params.limit_genome_generate_ram}"
+        "--limitGenomeGenerateRAM {params.limit_genome_generate_ram} "
+        "--genomeSAindexNbases {params.genome_sa}"
 
 #######################
 # RNA-seq read trimming
