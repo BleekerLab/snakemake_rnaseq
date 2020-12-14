@@ -76,7 +76,7 @@ def get_star_names(wildcards):
 #################
 MULTIQC = RESULT_DIR + "multiqc_report.html"
 BAM_FILES = expand(RESULT_DIR + "star/{sample}_Aligned.sortedByCoord.out.bam", sample = SAMPLES)
-MAPPING_REPORT = RESULT_DIR + "star/mapping_summary.tsv"
+MAPPING_REPORT = RESULT_DIR + "mapping_summary.tsv"
 
 
 rule all:
@@ -208,11 +208,11 @@ rule generate_mapping_summary:
     input:
         expand(RESULT_DIR + "star/{sample}_Log.final.out", sample = SAMPLES)
     output:
-        RESULT_DIR + "star/mapping_summary.tsv"
+        RESULT_DIR + "mapping_summary.tsv"
     message:
         "Concatenating STAR mapping report and generating mapping summary."
     params:
-        directory_with_mapping_reports = RESULT_DIR + "star/"
+        directory_with_mapping_reports = RESULT_DIR 
     shell:
         "python scripts/generate_mapping_summary.py {params.directory_with_mapping_reports} {output}"
 
