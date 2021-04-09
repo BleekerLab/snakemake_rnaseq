@@ -5,6 +5,8 @@
 - [SURFsara LISA cluster](#surfsara-lisa-cluster)
 	- [Creating the batch script](#creating-the-batch-script)
 - [Crunchomics](#crunchomics)
+	- [salloc](#salloc)
+	- [srun](#srun)
 - [Useful links](#useful-links)
 
 <!-- /MarkdownTOC -->
@@ -43,9 +45,17 @@ Remarks:
 
 # Crunchomics
 
+## salloc
+
 `salloc -N 1 -w omics-cn005 --cpus-per-task 30 --mem=30G`
 
 `srun snakemake --cores 30`
+
+## srun
+
+`srun --time=24:00:00 --mem-per-cpu=8G --cpus-per-task=12 --pty bash -i`
+
+This starts an interactive bash with 12 CPUs allocated per task and 8G of RAM per CPU. 
 
 
 # Useful links
