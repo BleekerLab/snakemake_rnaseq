@@ -7,6 +7,7 @@
 - [Crunchomics](#crunchomics)
 	- [salloc](#salloc)
 	- [srun](#srun)
+- [Retrieving your results](#retrieving-your-results)
 - [Useful links](#useful-links)
 
 <!-- /MarkdownTOC -->
@@ -57,6 +58,10 @@ Remarks:
 
 This starts an interactive bash with 12 CPUs allocated per task and 8G of RAM per CPU. 
 
+# Retrieving your results
+
+For instance, download the results but exclude bam files (too big).   
+`rsync -a -v -e ssh --exclude="*bam"  mgallan1@omics-h0.science.uva.nl:/zfs/omics/personal/mgallan1/workspace/snakemake_rnaseq/results/ [local directory]`
 
 # Useful links
 - [Snakemake with SLURM](https://accio.github.io/programming/2020/06/16/Snakemake-with-slurm.html)
