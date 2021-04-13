@@ -38,3 +38,9 @@ star:
   matesgap:               '20000'                  # max length between mates 
   samattributes:          'NH HI AS nM MD'         # SAM attributes (by default only NH HI AS nM). See STAR manual
 
+
+###############
+# featureCounts
+###############
+
+count_multimappers: FALSE                          # set to TRUE if you need to count multimappers (e.g. you have used the QuantSeq 3’ mRNA-Seq Library Prep)
