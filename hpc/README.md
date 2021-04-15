@@ -48,15 +48,17 @@ Remarks:
 
 ## salloc
 
-`salloc -N 1 -w omics-cn005 --cpus-per-task 30 --mem=30G`
-
-`srun snakemake --cores 30`
+Step1: `salloc -N 1 -w omics-cn005 --cpus-per-task 30 --mem=30G`  
+Step2: `conda activate rnaseq`  
+Step3: `srun snakemake --cores 30`  
 
 ## srun
 
-`srun --time=24:00:00 --mem-per-cpu=8G --cpus-per-task=12 --pty bash -i`
+Step1: `srun --time=24:00:00 --mem-per-cpu=8G --cpus-per-task=10 --pty bash -i`
+Step2: `conda activate rnaseq`
+Step3: `snakemake -j 10` (since we specified 10 cpus per task)
 
-This starts an interactive bash with 12 CPUs allocated per task and 8G of RAM per CPU. 
+This starts an interactive bash with 10 CPUs allocated per task and 8G of RAM per CPU. 
 
 # Retrieving your results
 
