@@ -163,6 +163,7 @@ rule multiqc:
     params:
         fastp_directory = WORKING_DIR + "fastp/",
         outdir = RESULT_DIR
+    message: "Summarising fastp reports with multiqc"
     shell:
         "multiqc --force "
         "--outdir {params.outdir} "
