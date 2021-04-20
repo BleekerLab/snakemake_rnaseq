@@ -213,7 +213,7 @@ rule generate_mapping_summary:
     message:
         "Concatenating STAR mapping report and generating mapping summary."
     params:
-        directory_with_mapping_reports = RESULT_DIR 
+        directory_with_mapping_reports = RESULT_DIR + "star/" 
     shell:
         "python scripts/generate_mapping_summary.py {params.directory_with_mapping_reports} {output}"
 

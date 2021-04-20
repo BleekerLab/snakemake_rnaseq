@@ -24,8 +24,7 @@ list_of_dfs = [pd.read_csv(log, sep = "\t", names=["attribute", str(sample)])
 ]
 
 
-df_merged = reduce(lambda  left,right: pd.merge(left,right,on=['attribute'],
-                                            how='outer'), list_of_dfs)
+df_merged = reduce(lambda  left,right: pd.merge(left,right,on=['attribute'], how='outer'), list_of_dfs)
 df_merged.to_csv(mapping_summary, sep="\t")
 
 
