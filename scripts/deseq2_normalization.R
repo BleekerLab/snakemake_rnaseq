@@ -59,14 +59,27 @@ df <- read.delim(
 df <- df %>% 
   tibble::column_to_rownames("Geneid")
 
-normalised_data <- mor_normalization(df)
 
-normalised_data = tibble::rownames_to_column(normalised_data, var = "gene")
+###############################
+# Special case if n_samples = 1
+# Then impossible to scale
+###############################
+if (ncol(df) == 1){
+  file.create(args[2])
+  cat("Impossible to perform DESeq2 scaling with only one sample", file=args[2], append=TRUE, sep="\n") 
+} else {
+  normalised_data <- mor_normalization(df)
+  normalised_data = tibble::rownames_to_column(normalised_data, var = "gene")
+  write.table(
+    x = normalised_data, 
+    file = args[2], 
+    sep = "\t", 
+    quote = FALSE, 
+    row.names = FALSE)
+}
 
-write.table(
-	x = normalised_data, 
-	file = args[2], 
-	sep = "\t", 
-	quote = FALSE, 
-	row.names = FALSE)
+
+
+
+
 
