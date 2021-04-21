@@ -135,8 +135,8 @@ rule fastp:
     input:
         get_fastq
     output:
-        fq1  = WORKING_DIR + "trimmed/" + "{sample}_R1_trimmed.fq.gz",
-        fq2  = WORKING_DIR + "trimmed/" + "{sample}_R2_trimmed.fq.gz",
+        fq1  = temp(WORKING_DIR + "trimmed/" + "{sample}_R1_trimmed.fq.gz"),
+        fq2  = temp(WORKING_DIR + "trimmed/" + "{sample}_R2_trimmed.fq.gz"),
         html = WORKING_DIR + "fastp/{sample}_fastp.html",
         json = WORKING_DIR + "fastp/{sample}_fastp.json"
     message:"trimming {wildcards.sample} reads"
