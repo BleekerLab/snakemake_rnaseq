@@ -2,6 +2,8 @@
 
 [![Snakemake](https://img.shields.io/badge/snakemake-≥5.2.0-brightgreen.svg)](https://snakemake.bitbucket.io)    
 [![Miniconda](https://img.shields.io/badge/miniconda-blue.svg)](https://conda.io/miniconda)
+[![GitHub
+Issues](https://img.shields.io/github/issues/bleekerlab/snakemake_rnaseq.svg)](https://github.com/bleekerlab/snakemake_rnaseq/issues)
 
 <!-- MarkdownTOC autolink="true" levels="1,2" -->
 
