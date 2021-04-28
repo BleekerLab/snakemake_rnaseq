@@ -4,6 +4,7 @@
 [![Miniconda](https://img.shields.io/badge/miniconda-blue.svg)](https://conda.io/miniconda)
 [![GitHub
 Issues](https://img.shields.io/github/issues/bleekerlab/snakemake_rnaseq.svg)](https://github.com/bleekerlab/snakemake_rnaseq/issues)
+[![Documentation Status](https://readthedocs.org/projects/snakemake-rnaseq-pipeline/badge/?version=latest)](https://snakemake-rnaseq-pipeline.readthedocs.io/en/latest/?badge=latest)
 
 <!-- MarkdownTOC autolink="true" levels="1,2" -->
 
