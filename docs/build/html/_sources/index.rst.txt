@@ -1,10 +1,11 @@
 Welcome to Snakemake RNA-seq pipeline documentation
 ====================================================
 
-Guide
-=====
+Contents
+========
 
-Some text here.::
+This is the main documentation of the Snakemake RNA-seq pipeline. 
+This pipeline takes single or paired-end mostly Illumina mRNA-seq reads and generates   ::
 
     print 'hello'
     >> hello 
@@ -12,6 +13,7 @@ Some text here.::
 .. toctree::
    :maxdepth: 2
 
+   installation
    license
 
 
