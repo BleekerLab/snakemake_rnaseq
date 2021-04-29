@@ -4,7 +4,8 @@
 #SBATCH  --time=24:00:00                # mail events (NONE, BEGIN, END, FAIL, ALL)
 #SBATCH --mail-type=END,FAIL            # When to send emails
 #SBATCH --mail-user=m.galland@uva.nl    # email address
-#SBATCH --mem-per-cpu=8Gb               # RAM requested per job (in Snakemake, one rule = one job)
+#SBATCH --mem=100G                      # Should correspond to the value in the config file for STAR limitGenomeGenerateRAM
+#SBATCH --mem-per-cpu=8G                # RAM requested per job (in Snakemake, one rule = one job)
 #SBATCH --output=parallel_%j.log        # standard output and error log (%j substitutes the JOB ID)
 
 
