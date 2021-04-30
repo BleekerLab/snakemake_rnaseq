@@ -91,6 +91,7 @@ rule all:
     shell:
         "cp config/config.yaml {RESULT_DIR};"
         "cp config/samples.tsv {RESULT_DIR};"
+        "rm -r {WORKING_DIR}"
 
 #######
 # Rules
