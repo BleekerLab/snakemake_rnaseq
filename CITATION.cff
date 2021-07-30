@@ -4,6 +4,15 @@ authors:
   - family-names: Galland
     given-names: Marc
     orcid: https://orcid.org/0000-0003-2161-8689
+  - family-names: Bliek
+    given-names: Tijs
+    orcid: https://orcid.org/0000-0002-0488-4873
+  - family-names: Chouaref
+    given-names: Jihed
+    orcid: https://orcid.org/0000-0003-3865-896X
+  - family-names: van der Kloet
+    given-names: Frans
+    orcid: https://orcid.org/0000-0002-8573-2651
 title: "RNA-seq analysis pipeline"
 version: 0.3.7
 doi: https://doi.org/10.5281/zenodo.4707140
