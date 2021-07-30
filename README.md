@@ -28,6 +28,7 @@ Issues](https://img.shields.io/github/issues/bleekerlab/snakemake_rnaseq.svg)](h
 	- [Authors](#authors)
 	- [Pipeline dependencies](#pipeline-dependencies)
 	- [Acknowledgments :clap:](#acknowledgments-clap)
+- [Citation](#citation)
 
 <!-- /MarkdownTOC -->
 
@@ -164,3 +165,7 @@ See the detailed protocol [here](./hpc/README.md).
 ## Acknowledgments :clap:
 [Johannes Köster](https://johanneskoester.bitbucket.io/); creator of Snakemake. 
 
+# Citation
+If you use this software, please use the following citation:  
+
+Bliek T., Chouaref J., van der Kloet F., Galland M. (2021). RNA-seq analysis pipeline (version 0.3.7). DOI: https://doi.org/https://doi.org/10.5281/zenodo.4707140
