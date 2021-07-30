@@ -5,8 +5,6 @@
 - [SURFsara LISA cluster](#surfsara-lisa-cluster)
 	- [Creating the batch script](#creating-the-batch-script)
 - [Crunchomics](#crunchomics)
-	- [salloc](#salloc)
-	- [srun](#srun)
 - [Retrieving your results](#retrieving-your-results)
 - [Useful links](#useful-links)
 
@@ -46,17 +44,11 @@ Remarks:
 
 # Crunchomics
 
-## salloc
 
-Step1: `salloc -N 1 -w omics-cn005 --cpus-per-task 30 --mem=30G`  
+Step1: `srun --time=24:00:00 --mem-per-cpu=8G --cpus-per-task=10 --pty bash -i`  
 Step2: `conda activate rnaseq`  
-Step3: `srun snakemake --cores 30`  
-
-## srun
-
-Step1: `srun --time=24:00:00 --mem-per-cpu=8G --cpus-per-task=10 --pty bash -i`
-Step2: `conda activate rnaseq`
-Step3: `snakemake -j 10` (since we specified 10 cpus per task)
+Step3: `snakemake -j 10` (since we specified 10 cpus per task)  
+Step4: `exit`
 
 This starts an interactive bash with 10 CPUs allocated per task and 8G of RAM per CPU. 
 
