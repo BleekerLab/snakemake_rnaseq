@@ -216,9 +216,10 @@ rule generate_mapping_summary:
     message:
         "Concatenating STAR mapping report and generating .csv mapping summary."
     params:
-        directory_with_mapping_reports = RESULT_DIR + "star/" 
+        directory_with_mapping_reports = RESULT_DIR + "star/",
+        config_file_path = "config/config.yaml"
     shell:
-        "python scripts/generate_mapping_summary.py {params.directory_with_mapping_reports} {output}"
+        "python scripts/generate_mapping_summary.py {params.directory_with_mapping_reports} {params.config_file_path} {output}"
 
 ##################################
 # Produce table of raw gene counts
@@ -273,3 +274,11 @@ rule normalise_raw_counts:
         "Normalising raw counts the DESeq2 way"
     shell:
         "Rscript --vanilla scripts/deseq2_normalization.R {input.raw} {output.norm}" 
+
+#############################
+# Plots of mapping statistics
+#############################
+
+
+
+
