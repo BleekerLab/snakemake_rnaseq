@@ -1,7 +1,7 @@
 Installation
 =======
 
-The MIT license
+To install the pipeline 
 
 
 Contact

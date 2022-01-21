@@ -217,9 +217,9 @@ rule generate_mapping_summary:
         "Concatenating STAR mapping report and generating .csv mapping summary."
     params:
         directory_with_mapping_reports = RESULT_DIR + "star/",
-        config_file_path = "config/config.yaml"
+        star_directory_name = RESULT_DIR + "star/"
     shell:
-        "python scripts/generate_mapping_summary.py {params.directory_with_mapping_reports} {params.config_file_path} {output}"
+        "python scripts/generate_mapping_summary.py {params.directory_with_mapping_reports} {params.star_directory_name} {output}"
 
 ##################################
 # Produce table of raw gene counts

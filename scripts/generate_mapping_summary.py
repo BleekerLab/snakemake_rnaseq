@@ -9,9 +9,12 @@ import sys
 from yaml import safe_load
 
 directory_with_mapping_reports = sys.argv[1]
-config_file_path = sys.argv[2] # to extract the name of the result directory from the config file
+star_results_directory_name = sys.argv[2]
 mapping_summary = sys.argv[3]
 
+print('************')
+print('star directory:', star_results_directory_name)
+print('************')
 ############################################################
 # Reads each file. Add sample name in the column with values
 ############################################################
@@ -32,21 +35,21 @@ df_merged = reduce(lambda  left,right: pd.merge(left,right,on=['attribute'], how
 # parse column names to get rid of the directory before the sample names
 #########################################################################
 
-if os.path.exists(config_file_path):
-    with open(config_file_path, 'r') as f:
-        # load configfile info
-        config_info = safe_load(f)
-else:
-    print("Config file does not exist. Please check that you have a config/config.yaml '{}'".format(config_file_path), file=sys.stderr)
+# drop column with row index (unnecessary)
+#df_merged.drop(columns=df_merged.columns[0], axis=1, inplace=True)
 
-RESULT_DIR = config_info["result_dir"]
-
-df_merged_parsed_colnames = df_merged.rename(columns = lambda x:x.replace(RESULT_DIR + "star/", ""))
+old_col_names = df_merged.columns.values.tolist()
+print('************')
+print('old col names:',old_col_names)
+print('************')
+new_col_names = [col.replace(star_results_directory_name, '') for col in old_col_names]
+print('new col names:', new_col_names)
+df_merged.columns = new_col_names
 
 ####################
 # Write to .csv file
 ####################
-df_merged_parsed_colnames.to_csv(mapping_summary, sep=",", index=False)
+df_merged.to_csv(mapping_summary, sep=",", index=False)
 
 
 
