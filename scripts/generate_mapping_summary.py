@@ -12,9 +12,6 @@ directory_with_mapping_reports = sys.argv[1]
 star_results_directory_name = sys.argv[2]
 mapping_summary = sys.argv[3]
 
-print('************')
-print('star directory:', star_results_directory_name)
-print('************')
 ############################################################
 # Reads each file. Add sample name in the column with values
 ############################################################
@@ -35,15 +32,9 @@ df_merged = reduce(lambda  left,right: pd.merge(left,right,on=['attribute'], how
 # parse column names to get rid of the directory before the sample names
 #########################################################################
 
-# drop column with row index (unnecessary)
-#df_merged.drop(columns=df_merged.columns[0], axis=1, inplace=True)
-
 old_col_names = df_merged.columns.values.tolist()
-print('************')
-print('old col names:',old_col_names)
-print('************')
 new_col_names = [col.replace(star_results_directory_name, '') for col in old_col_names]
-print('new col names:', new_col_names)
+
 df_merged.columns = new_col_names
 
 ####################

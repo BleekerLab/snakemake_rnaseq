@@ -79,19 +79,35 @@ BAM_FILES = expand(RESULT_DIR + "star/{sample}_Aligned.sortedByCoord.out.bam", s
 MAPPING_REPORT = RESULT_DIR + "mapping_summary.csv"
 
 
-rule all:
-    input:
-        MULTIQC,
-        BAM_FILES, 
-        MAPPING_REPORT,
-        RESULT_DIR + "raw_counts.parsed.tsv",
-        RESULT_DIR + "scaled_counts.tsv"
-    message:
-        "RNA-seq pipeline run complete!"
-    shell:
-        "cp config/config.yaml {RESULT_DIR};"
-        "cp config/samples.tsv {RESULT_DIR};"
-        "rm -r {WORKING_DIR}"
+if config["keep_working_dir"] == False:
+    rule all:
+        input:
+            MULTIQC,
+            BAM_FILES, 
+            MAPPING_REPORT,
+            RESULT_DIR + "raw_counts.parsed.tsv",
+            RESULT_DIR + "scaled_counts.tsv"
+        message:
+            "RNA-seq pipeline run complete!"
+        shell:
+            "cp config/config.yaml {RESULT_DIR};"
+            "cp config/samples.tsv {RESULT_DIR};"
+            "rm -r {WORKING_DIR}"
+elif config["keep_working_dir"] == True:
+    rule all:
+        input:
+            MULTIQC,
+            BAM_FILES, 
+            MAPPING_REPORT,
+            RESULT_DIR + "raw_counts.parsed.tsv",
+            RESULT_DIR + "scaled_counts.tsv"
+        message:
+            "RNA-seq pipeline run complete!"
+        shell:
+            "cp config/config.yaml {RESULT_DIR};"
+            "cp config/samples.tsv {RESULT_DIR};"
+else:
+    raise ValueError('please specify only "True" or "False" for the "keep_working_dir" parameter in the config file.')
 
 #######
 # Rules
@@ -138,8 +154,8 @@ rule fastp:
     input:
         get_fastq
     output:
-        fq1  = temp(WORKING_DIR + "trimmed/" + "{sample}_R1_trimmed.fq.gz"),
-        fq2  = temp(WORKING_DIR + "trimmed/" + "{sample}_R2_trimmed.fq.gz"),
+        fq1  = WORKING_DIR + "trimmed/" + "{sample}_R1_trimmed.fq.gz",
+        fq2  = WORKING_DIR + "trimmed/" + "{sample}_R2_trimmed.fq.gz",
         html = WORKING_DIR + "fastp/{sample}_fastp.html",
         json = WORKING_DIR + "fastp/{sample}_fastp.json"
     message:"trimming {wildcards.sample} reads"

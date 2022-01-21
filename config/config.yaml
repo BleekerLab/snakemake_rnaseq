@@ -1,7 +1,9 @@
 ---
 # directories
-result_dir:  results/ # should be kept
-working_dir: temp/    # can be removed (temporary files)
+result_dir:  results/        # should be kept
+working_dir: temp/           # can be removed (temporary files)
+keep_working_dir: TRUE # if TRUE then 'working_dir' is kept at the completion of the pipeline. if FALSE, it is deleted. 
+
 
 # samples to condition
 units: config/samples.tsv
@@ -15,6 +17,7 @@ refs:
 # read quality trimming
 fastp:
   qualified_quality_phred: 30 # Phred+33 score (> 15 for Proton Ion, > 30 or more for Illumina) 
+
 
 
 ######
