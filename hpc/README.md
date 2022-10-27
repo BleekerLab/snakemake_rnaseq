@@ -44,6 +44,7 @@ Remarks:
 
 # Crunchomics
 
+## Running the Snakemake RNA-seq pipeline
 
 Step1: `srun --time=24:00:00 --mem-per-cpu=8G --cpus-per-task=10 --pty bash -i`  
 Step2: `conda activate rnaseq`  
@@ -52,10 +53,22 @@ Step4: `exit`
 
 This starts an interactive bash with 10 CPUs allocated per task and 8G of RAM per CPU. 
 
-# Retrieving your results
+Keep the `JOBID` somewhere so that you can check the progress of your job.
+
+## Job efficiency checks
+
+It can be useful to check memory efficienty after your job is completed. 
+
+One can also use the wrapper [reportseff](https://github.com/troycomi/reportseff) to report on multiple job efficiencies at once.
+
+See this [blog post](https://rse.princeton.edu/2020/01/monitoring-slurm-efficiency-with-reportseff/) on resource efficiency. 
+
+
+## Transferring results to your local machine 
 
 For instance, download the results but exclude bam files (too big).   
 `rsync -a -v -e ssh --exclude="*bam"  mgallan1@omics-h0.science.uva.nl:/zfs/omics/personal/mgallan1/workspace/snakemake_rnaseq/results/ [local directory]`
+
 
 # Useful links
 - [Snakemake with SLURM](https://accio.github.io/programming/2020/06/16/Snakemake-with-slurm.html)
