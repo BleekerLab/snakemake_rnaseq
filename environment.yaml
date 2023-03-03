@@ -8,7 +8,7 @@ dependencies:
   - snakemake = 5.20.0
   - star = 2.7.6a
   - fastp = 0.19.5
-  - subread = 1.6.0
+  - subread = 1.6.2
   - r-tidyverse = 1.2.1
   - multiqc = 1.9
   - yaml = 0.2.5
